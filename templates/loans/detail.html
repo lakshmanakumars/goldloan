@@ -1,0 +1,310 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}{{ block.super }}
+<link rel="stylesheet" href="{% static 'vaarahi/vaarahi.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="vh-detail">
+
+  <div class="vh-crumb">
+    <a href="/admin/">Dashboard</a> ›
+    <a href="{% url 'admin:loans_loan_changelist' %}">Loans</a> ›
+    <span>{{ loan.loan_no }}</span>
+  </div>
+
+  <div class="vh-hero-light">
+    <div class="id-block">
+      <div class="small">Loan #</div>
+      <div class="big">{{ loan.loan_no }}</div>
+    </div>
+    <div>
+      <h1><a href="{% url 'customers:detail' loan.customer.pk %}">{{ loan.customer.name }}</a></h1>
+      <div class="meta">
+        {{ loan.customer.code }} &middot; {{ loan.customer.phone }}
+        {% if loan.branch %}&middot; Branch <strong>{{ loan.branch.code }}</strong>{% endif %}
+        <br>
+        Principal <strong>₹{{ loan.principal.amount|floatformat:2 }}</strong> @
+        {{ loan.interest_rate_pct }}% {% if loan.rate_type == 'monthly' %}p.m.{% else %}p.a.{% endif %}
+        &middot; {{ loan.tenure_months }} months
+        &middot; matures {{ loan.maturity_date|date:"d M Y" }}
+        &middot; <span class="vh-pill {% if loan.status == 'active' %}vh-pill-active{% elif loan.status == 'overdue' %}vh-pill-overdue{% else %}vh-pill-closed{% endif %}">{{ loan.get_status_display }}</span>
+      </div>
+    </div>
+    <div class="actions">
+      {% if whatsapp_url %}
+      <a href="{{ whatsapp_url }}" target="_blank" class="vh-btn vh-btn-whatsapp">
+        <span class="material-symbols-outlined">chat</span>WhatsApp</a>
+      {% endif %}
+      <a href="{{ pledge_pdf_url }}" target="_blank" class="vh-btn vh-btn-accent">
+        <span class="material-symbols-outlined">picture_as_pdf</span>Pledge ticket</a>
+      {% if is_open and can_edit %}
+      <a href="{{ topup_url }}" class="vh-btn" style="background:#047857;color:#fff">
+        <span class="material-symbols-outlined">add_card</span>Top-up</a>
+      <a href="{{ renew_url }}" class="vh-btn" style="background:#3b82f6;color:#fff">
+        <span class="material-symbols-outlined">autorenew</span>Renew</a>
+      <a href="{{ preclose_url }}" class="vh-btn" style="background:#b91c1c;color:#fff">
+        <span class="material-symbols-outlined">lock</span>Pre-close</a>
+      {% endif %}
+      {% if can_edit %}
+      <a href="{{ edit_url }}" class="vh-btn vh-btn-ghost">
+        <span class="material-symbols-outlined">edit</span>Edit</a>
+      {% endif %}
+      <a href="{{ history_url }}" class="vh-btn vh-btn-ghost">
+        <span class="material-symbols-outlined">history</span>History</a>
+    </div>
+  </div>
+
+  <div class="vh-kpi-grid" style="margin-bottom:18px">
+    <div class="vh-kpi">
+      <div class="vh-kpi-label">Outstanding</div>
+      <div class="vh-kpi-value">₹{{ outstanding|floatformat:2 }}</div>
+      <div class="vh-kpi-foot">paid ₹{{ paid_p|floatformat:2 }} of ₹{{ loan.principal.amount|floatformat:2 }}</div>
+    </div>
+    <div class="vh-kpi">
+      <div class="vh-kpi-label">Interest due now</div>
+      <div class="vh-kpi-value">₹{{ due_now|floatformat:2 }}</div>
+      <div class="vh-kpi-foot">over {{ days }} days · {{ months }} month(s)</div>
+    </div>
+    <div class="vh-kpi">
+      <div class="vh-kpi-label">Total settlement today</div>
+      <div class="vh-kpi-value">₹{{ total_settlement|floatformat:2 }}</div>
+      <div class="vh-kpi-foot">outstanding + interest due</div>
+    </div>
+    <div class="vh-kpi">
+      <div class="vh-kpi-label">Monthly interest</div>
+      <div class="vh-kpi-value">₹{{ monthly|floatformat:2 }}</div>
+      <div class="vh-kpi-foot">at the current rate</div>
+    </div>
+  </div>
+
+  <div class="vh-layout">
+    <div>
+      <div class="vh-tabs">
+        <button class="vh-tab active" data-tab="balance" type="button">
+          <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">account_balance</span>
+          Balance & Interest
+        </button>
+        <button class="vh-tab" data-tab="items" type="button">
+          <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">diamond</span>
+          Gold items ({{ items|length }})
+        </button>
+        <button class="vh-tab" data-tab="repayments" type="button">
+          <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">payments</span>
+          Repayments ({{ repayments|length }})
+        </button>
+        <button class="vh-tab" data-tab="timeline" type="button">
+          <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">history</span>
+          Timeline
+        </button>
+        <button class="vh-tab" data-tab="ltv" type="button">
+          <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">verified</span>
+          LTV eligibility
+        </button>
+      </div>
+
+      <div class="vh-tab-panel active" id="panel-balance">
+        <div class="vh-balance-card">
+          <h3 class="vh-section-title">Balance breakdown</h3>
+          <table class="vh-balance-table">
+            <tr><td class="k">Original principal</td><td class="v">₹{{ loan.principal.amount|floatformat:2 }}</td></tr>
+            <tr><td class="k">Total principal paid</td><td class="v" style="color:#047857">₹{{ paid_p|floatformat:2 }}</td></tr>
+            <tr class="highlight"><td class="k">Outstanding principal</td><td class="v">₹{{ outstanding|floatformat:2 }}</td></tr>
+            <tr class="divider"><td colspan="2"></td></tr>
+            <tr><td class="k">Days outstanding</td><td class="v">{{ days }} days · {{ months }} month(s) charged</td></tr>
+            <tr><td class="k">Monthly interest</td><td class="v">₹{{ monthly|floatformat:2 }}</td></tr>
+            <tr><td class="k">Interest accrued to date</td><td class="v">₹{{ accrued|floatformat:2 }}</td></tr>
+            <tr><td class="k">Interest paid so far</td><td class="v" style="color:#047857">₹{{ paid_i|floatformat:2 }}</td></tr>
+            <tr class="danger"><td class="k">Interest due now</td><td class="v">₹{{ due_now|floatformat:2 }}</td></tr>
+            <tr class="divider"><td colspan="2"></td></tr>
+            <tr class="success-row"><td class="k">Total settlement to close today</td><td class="v">₹{{ total_settlement|floatformat:2 }}</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="vh-tab-panel" id="panel-items">
+        {% if items %}
+        <table class="vh-table">
+          <thead><tr>
+            <th>Description</th>
+            <th class="vh-num">Gross (g)</th>
+            <th class="vh-num">Stone (g)</th>
+            <th class="vh-num">Net (g)</th>
+            <th class="vh-num">Purity</th>
+            <th>Photo</th>
+          </tr></thead>
+          <tbody>
+            {% for it in items %}
+            <tr>
+              <td>{{ it.description }}</td>
+              <td class="vh-num">{{ it.gross_weight_g }}</td>
+              <td class="vh-num">{{ it.stone_weight_g }}</td>
+              <td class="vh-num"><b>{{ it.net_weight_g }}</b></td>
+              <td class="vh-num">{{ it.purity_carat }} ct</td>
+              <td>{% if it.photo %}<a href="{{ it.photo.url }}" target="_blank" class="vh-btn vh-btn-ghost vh-btn-sm">view</a>{% else %}—{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="vh-empty">No gold items recorded. Edit the loan to add them.</div>
+        {% endif %}
+      </div>
+
+      <div class="vh-tab-panel" id="panel-repayments">
+        {% if repayments %}
+        <table class="vh-table">
+          <thead><tr>
+            <th>Paid at</th>
+            <th class="vh-num">Principal</th>
+            <th class="vh-num">Interest</th>
+            <th class="vh-num">Total</th>
+            <th>Mode</th><th>Ref</th><th>Receipt #</th><th>Actions</th>
+          </tr></thead>
+          <tbody>
+            {% for r in repayments %}
+            <tr>
+              <td>{{ r.paid_at|date:"d M Y H:i" }}</td>
+              <td class="vh-num">₹{{ r.principal_paid.amount|floatformat:2 }}</td>
+              <td class="vh-num">₹{{ r.interest_paid.amount|floatformat:2 }}</td>
+              <td class="vh-num"><b>₹{{ r.principal_paid.amount|add:r.interest_paid.amount|floatformat:2 }}</b></td>
+              <td>{{ r.get_mode_display }}</td>
+              <td>{{ r.reference|default:"—" }}</td>
+              <td>{{ r.receipt_no|default:"—" }}</td>
+              <td>
+                <a href="{% url 'loans:repayment_detail' r.pk %}" class="vh-btn vh-btn-ghost vh-btn-sm">View</a>
+                <a href="{% url 'loans:repayment_receipt' r.pk %}" target="_blank" class="vh-btn vh-btn-accent vh-btn-sm">Receipt</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="vh-empty">No repayments yet.
+          {% if can_repay and is_open %}
+          <div style="margin-top:12px"><a href="{{ add_repayment_url }}" class="vh-btn vh-btn-success">
+            <span class="material-symbols-outlined">add</span>Record repayment</a></div>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="vh-tab-panel" id="panel-timeline">
+        <ul class="vh-timeline">
+          {% for e in events %}
+          <li>
+            <div class="ic"><span class="material-symbols-outlined">{{ e.icon }}</span></div>
+            <div style="flex:1">
+              <div class="ev-title">{{ e.title }}</div>
+              <div class="ev-desc">{{ e.desc }}</div>
+              <div class="ev-when">{{ e.when|date:"d M Y" }}</div>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="vh-tab-panel" id="panel-ltv">
+        <div class="vh-balance-card">
+          <h3 class="vh-section-title">Loan-to-Value eligibility</h3>
+          {% if ltv.item_breakdown %}
+          <table class="vh-table">
+            <thead><tr>
+              <th>Item</th><th class="vh-num">Net wt</th><th class="vh-num">Purity</th>
+              <th class="vh-num">Rate / g</th><th class="vh-num">Value</th>
+            </tr></thead>
+            <tbody>
+              {% for r in ltv.item_breakdown %}
+              <tr>
+                <td>{{ r.description }}</td>
+                <td class="vh-num">{{ r.net_wt }} g</td>
+                <td class="vh-num">{{ r.purity }} ct</td>
+                <td class="vh-num">{% if r.rate_per_g %}₹{{ r.rate_per_g|floatformat:2 }}{% else %}—{% endif %}</td>
+                <td class="vh-num"><b>₹{{ r.value|floatformat:2 }}</b></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+            <tfoot>
+              <tr><td colspan="4" style="text-align:right;font-weight:700">Gross gold value</td>
+                  <td class="vh-num"><b>₹{{ ltv.gross_value|floatformat:2 }}</b></td></tr>
+              <tr><td colspan="4" style="text-align:right">Max LTV ({{ ltv.max_ltv_pct }}%) → Eligible principal</td>
+                  <td class="vh-num"><b>₹{{ ltv.eligible_principal|floatformat:2 }}</b></td></tr>
+            </tfoot>
+          </table>
+          <div style="margin-top:12px;padding:10px 14px;border-radius:6px;
+                      {% if ltv_within %}background:#F0FDF4;color:#166534;{% else %}background:#FEE2E2;color:#991B1B;{% endif %}
+                      font-weight:600">
+            Principal ₹{{ loan.principal.amount|floatformat:2 }} is
+            <b>{% if ltv_within %}WITHIN{% else %}ABOVE{% endif %}</b> the LTV cap.
+          </div>
+          {% else %}
+          <div class="vh-empty">No gold items. Add them to compute LTV.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <aside>
+      <div class="vh-action-card">
+        <h3>Quick actions</h3>
+        <div class="stack">
+          {% if is_open and can_repay %}
+          <a href="{{ add_repayment_url }}" class="vh-btn vh-btn-success">
+            <span class="material-symbols-outlined">add</span>Record repayment</a>
+          {% endif %}
+          {% if whatsapp_url %}
+          <a href="{{ whatsapp_url }}" target="_blank" class="vh-btn vh-btn-whatsapp">
+            <span class="material-symbols-outlined">chat</span>Send WhatsApp</a>
+          {% endif %}
+          <a href="{{ pledge_pdf_url }}" target="_blank" class="vh-btn vh-btn-accent">
+            <span class="material-symbols-outlined">picture_as_pdf</span>Pledge ticket</a>
+          {% if is_open and can_edit %}
+          <a href="{{ topup_url }}" class="vh-btn vh-btn-primary">
+            <span class="material-symbols-outlined">add_circle</span>Top-up</a>
+          <a href="{{ renew_url }}" class="vh-btn vh-btn-ghost">
+            <span class="material-symbols-outlined">restart_alt</span>Renew</a>
+          <a href="{{ preclose_url }}" class="vh-btn vh-btn-danger">
+            <span class="material-symbols-outlined">lock</span>Pre-close</a>
+          {% endif %}
+          {% if can_edit %}
+          <a href="{{ edit_url }}" class="vh-btn vh-btn-ghost">
+            <span class="material-symbols-outlined">edit</span>Edit loan</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="vh-action-card">
+        <h3>Customer</h3>
+        <div class="vh-info-row"><div class="k">Name</div>
+          <div class="v"><a href="{% url 'customers:detail' loan.customer.pk %}">{{ loan.customer.name }}</a></div></div>
+        <div class="vh-info-row"><div class="k">Code</div><div class="v">{{ loan.customer.code }}</div></div>
+        <div class="vh-info-row"><div class="k">Phone</div><div class="v">{{ loan.customer.phone }}</div></div>
+        {% if loan.branch %}<div class="vh-info-row"><div class="k">Branch</div><div class="v">{{ loan.branch.code }} — {{ loan.branch.name }}</div></div>{% endif %}
+        {% if loan.packet_no %}<div class="vh-info-row"><div class="k">Packet #</div><div class="v">{{ loan.packet_no }}</div></div>{% endif %}
+      </div>
+
+      <div class="vh-action-card">
+        <h3>Loan info</h3>
+        <div class="vh-info-row"><div class="k">Started</div><div class="v">{{ loan.start_date|date:"d M Y" }}</div></div>
+        <div class="vh-info-row"><div class="k">Matures</div><div class="v">{{ loan.maturity_date|date:"d M Y" }}</div></div>
+        <div class="vh-info-row"><div class="k">Tenure</div><div class="v">{{ loan.tenure_months }} months</div></div>
+        <div class="vh-info-row"><div class="k">Status</div><div class="v"><span class="vh-pill {% if loan.status == 'active' %}vh-pill-active{% elif loan.status == 'overdue' %}vh-pill-overdue{% else %}vh-pill-closed{% endif %}">{{ loan.get_status_display }}</span></div></div>
+        {% if loan.closed_at %}<div class="vh-info-row"><div class="k">Closed at</div><div class="v">{{ loan.closed_at|date:"d M Y" }}</div></div>{% endif %}
+        {% if loan.renewed_to %}<div class="vh-info-row"><div class="k">Renewed to</div><div class="v"><a href="{% url 'loans:detail' loan.renewed_to.pk %}">{{ loan.renewed_to.loan_no }}</a></div></div>{% endif %}
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.vh-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.vh-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.vh-tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+  });
+});
+</script>
+{% endblock %}

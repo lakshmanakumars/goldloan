@@ -1,0 +1,4 @@
+{{ message }}
+
+— {{ tenant.name }}
+{{ site_base_url }}

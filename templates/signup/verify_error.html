@@ -1,0 +1,25 @@
+{% extends "signup/_base.html" %}
+{% block content %}
+<div style="text-align:center;margin-bottom:18px">
+  <div style="display:inline-flex;width:56px;height:56px;border-radius:50%;
+              background:#fee2e2;color:#991b1b;align-items:center;
+              justify-content:center;font-size:28px">×</div>
+</div>
+<h1 style="text-align:center">
+  {% if reason == 'expired' %}This link has expired
+  {% else %}We couldn't activate your portal
+  {% endif %}
+</h1>
+<p class="sub" style="text-align:center">
+  {% if reason == 'expired' %}
+    Verification links are valid for 24 hours. Please sign up again to get a fresh link.
+  {% else %}
+    Something went wrong while creating your back-office.{% if detail %} ({{ detail }}){% endif %}
+    Please contact support or try again.
+  {% endif %}
+</p>
+
+<div style="text-align:center;margin-top:18px">
+  <a href="{% url 'signup:form' %}" style="display:inline-block;background:#c46616;color:#fff;padding:12px 32px;border-radius:6px;text-decoration:none;font-weight:700">Try again →</a>
+</div>
+{% endblock %}

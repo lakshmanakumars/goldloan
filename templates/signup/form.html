@@ -1,0 +1,126 @@
+{% extends "signup/_base.html" %}
+{% block content %}
+<h1>Start your free 14-day trial</h1>
+<p class="sub">Get your own pawn-broker back-office in 60 seconds. No credit card. No setup fees.</p>
+
+<form method="post" novalidate>{% csrf_token %}
+  <div class="field">
+    <label for="id_business_name">Business name *</label>
+    <input type="text" name="business_name" id="id_business_name" required
+           value="{{ form.business_name.value|default:'' }}"
+           placeholder="e.g. Sunrise Gold Loans">
+    {% if form.business_name.errors %}<div class="err">{{ form.business_name.errors.0 }}</div>{% endif %}
+  </div>
+
+  <div class="field">
+    <label for="id_slug">Your portal URL *</label>
+    <div class="slug-wrap">
+      <input type="text" name="slug" id="id_slug" required
+             value="{{ form.slug.value|default:'' }}"
+             placeholder="sunrise" pattern="[a-z][a-z0-9-]{2,30}">
+      <span class="slug-suffix">.{{ request.get_host|default:"localhost" }}/admin/</span>
+    </div>
+    <div class="help">3–31 chars · lowercase letters, digits, hyphens · must start with a letter.</div>
+    <div class="slug-status" id="slug-status"></div>
+    {% if form.slug.errors %}<div class="err">{{ form.slug.errors.0 }}</div>{% endif %}
+  </div>
+
+  <div class="row2">
+    <div class="field">
+      <label for="id_owner_username">Login username *</label>
+      <input type="text" name="owner_username" id="id_owner_username" required
+             value="{{ form.owner_username.value|default:'' }}"
+             placeholder="admin">
+      {% if form.owner_username.errors %}<div class="err">{{ form.owner_username.errors.0 }}</div>{% endif %}
+    </div>
+    <div class="field">
+      <label for="id_owner_email">Owner email *</label>
+      <input type="email" name="owner_email" id="id_owner_email" required
+             value="{{ form.owner_email.value|default:'' }}"
+             placeholder="you@example.com">
+      <div class="help">We'll send your verification link + login password here.</div>
+      {% if form.owner_email.errors %}<div class="err">{{ form.owner_email.errors.0 }}</div>{% endif %}
+    </div>
+  </div>
+
+  <div class="row2">
+    <div class="field">
+      <label for="id_owner_phone">Owner phone *</label>
+      <input type="tel" name="owner_phone" id="id_owner_phone" required
+             value="{{ form.owner_phone.value|default:'' }}"
+             placeholder="9876543210" pattern="[0-9 +-]{10,15}">
+      {% if form.owner_phone.errors %}<div class="err">{{ form.owner_phone.errors.0 }}</div>{% endif %}
+    </div>
+    <div class="field">
+      <label for="id_license_no">Pawn-broker license # (optional)</label>
+      <input type="text" name="license_no" id="id_license_no"
+             value="{{ form.license_no.value|default:'' }}"
+             placeholder="RBI-NBFC-...">
+      {% if form.license_no.errors %}<div class="err">{{ form.license_no.errors.0 }}</div>{% endif %}
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="id_gst_no">GST # (optional)</label>
+    <input type="text" name="gst_no" id="id_gst_no"
+           value="{{ form.gst_no.value|default:'' }}"
+           placeholder="27AAACA1234A1Z5" maxlength="20">
+    {% if form.gst_no.errors %}<div class="err">{{ form.gst_no.errors.0 }}</div>{% endif %}
+  </div>
+
+  {% if form.non_field_errors %}
+    {% for e in form.non_field_errors %}<div class="err">{{ e }}</div>{% endfor %}
+  {% endif %}
+
+  <div class="submit-row">
+    <button type="submit" class="submit">Create my back-office →</button>
+    <span class="helper">14-day trial · no card required</span>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Live slug availability check
+  const slug = document.getElementById('id_slug');
+  const biz = document.getElementById('id_business_name');
+  const status = document.getElementById('slug-status');
+  let timer;
+
+  function check() {
+    const v = slug.value.trim();
+    if (!v) { status.textContent = ''; status.className = 'slug-status'; return; }
+    fetch('/signup/check-slug/?slug=' + encodeURIComponent(v))
+      .then(r => r.json())
+      .then(d => {
+        if (d.available) {
+          status.textContent = '✓ Available';
+          status.className = 'slug-status ok';
+        } else {
+          const sug = d.suggested ? ' — try "' + d.suggested + '"' : '';
+          let r = d.reason === 'taken' ? 'Already taken' :
+                  d.reason === 'reserved' ? 'Reserved' :
+                  d.reason === 'empty' ? '' : 'Not allowed';
+          status.textContent = '× ' + r + sug;
+          status.className = 'slug-status bad';
+        }
+      })
+      .catch(() => { status.textContent = ''; });
+  }
+
+  function debounced() { clearTimeout(timer); timer = setTimeout(check, 300); }
+
+  slug.addEventListener('input', debounced);
+
+  biz.addEventListener('input', () => {
+    if (!slug.dataset.touched) {
+      slug.value = biz.value.toLowerCase()
+        .replace(/[^a-z0-9-]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .substring(0, 31);
+      debounced();
+    }
+  });
+  slug.addEventListener('focus', () => { slug.dataset.touched = '1'; });
+</script>
+{% endblock %}

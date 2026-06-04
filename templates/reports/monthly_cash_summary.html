@@ -1,0 +1,46 @@
+{% extends "reports/base.html" %}
+{% load i18n %}
+{% block report %}
+<h1>{% trans "Monthly Cash Summary" %}</h1>
+<div class="sub">FY {{ year }}</div>
+
+<form class="toolbar" method="get">
+  <label>{% trans "Year" %} <input type="number" name="year" value="{{ year }}" min="2020" max="2099"></label>
+  <button class="btn btn-primary" type="submit">{% trans "Apply" %}</button>
+  <a class="btn btn-outline" href="?year={{ year }}&format=xlsx">{% trans "Download Excel" %}</a>
+</form>
+
+<div class="cards">
+  <div class="card"><div class="label">{% trans "Total OUT (disbursed)" %}</div>
+    <div class="value">₹{{ data.total_out|floatformat:2 }}</div></div>
+  <div class="card"><div class="label">{% trans "Total IN (received)" %}</div>
+    <div class="value">₹{{ data.total_in|floatformat:2 }}</div></div>
+  <div class="card"><div class="label">{% trans "Interest earned" %}</div>
+    <div class="value">₹{{ data.total_interest|floatformat:2 }}</div></div>
+</div>
+
+<table>
+  <thead><tr>
+    <th>{% trans "Month" %}</th>
+    <th class="num">{% trans "Disbursed (OUT)" %}</th>
+    <th class="num">{% trans "Received (IN)" %}</th>
+    <th class="num">{% trans "Interest Earned" %}</th>
+  </tr></thead>
+  <tbody>
+    {% for r in data.rows %}
+    <tr>
+      <td>{{ r.month|date:"M Y" }}</td>
+      <td class="num out">₹{{ r.out|floatformat:2 }}</td>
+      <td class="num in">₹{{ r.in|floatformat:2 }}</td>
+      <td class="num">₹{{ r.interest|floatformat:2 }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot><tr>
+    <td>{% trans "Total" %}</td>
+    <td class="num out">₹{{ data.total_out|floatformat:2 }}</td>
+    <td class="num in">₹{{ data.total_in|floatformat:2 }}</td>
+    <td class="num">₹{{ data.total_interest|floatformat:2 }}</td>
+  </tr></tfoot>
+</table>
+{% endblock %}

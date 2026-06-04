@@ -1,0 +1,41 @@
+{% extends "reports/base.html" %}
+{% block report %}
+<h1>Customer Statement</h1>
+<div class="sub">{{ data.customer.code }} — {{ data.customer.name }} ({{ data.customer.phone }})</div>
+
+<form class="toolbar" method="get">
+  <a class="btn btn-outline" href="?format=xlsx">Download Excel</a>
+</form>
+
+<div class="cards">
+  <div class="card"><div class="label">Total disbursed</div>
+    <div class="value">₹{{ data.total_out|floatformat:2 }}</div></div>
+  <div class="card"><div class="label">Total received</div>
+    <div class="value">₹{{ data.total_in|floatformat:2 }}</div></div>
+  <div class="card"><div class="label">Net balance</div>
+    <div class="value">₹{{ data.balance|floatformat:2 }}</div>
+    <div class="foot">Positive = customer owes you</div></div>
+</div>
+
+{% if data.events %}
+<table>
+  <thead><tr>
+    <th>Date</th><th>Event</th>
+    <th class="num">Out</th><th class="num">In</th><th class="num">Balance</th>
+  </tr></thead>
+  <tbody>
+    {% for e in data.events %}
+    <tr>
+      <td>{{ e.when|date:"d M Y" }}</td>
+      <td>{{ e.event }}</td>
+      <td class="num out">{% if e.out %}₹{{ e.out|floatformat:2 }}{% endif %}</td>
+      <td class="num in">{% if e.in %}₹{{ e.in|floatformat:2 }}{% endif %}</td>
+      <td class="num">₹{{ e.balance|floatformat:2 }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">No activity yet for this customer.</div>
+{% endif %}
+{% endblock %}

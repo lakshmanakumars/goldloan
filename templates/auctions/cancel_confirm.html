@@ -1,0 +1,19 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'vaarahi/vaarahi.css' %}">{% endblock %}
+{% block content %}
+<div class="vh-detail" style="max-width:640px">
+  <div class="vh-crumb">
+    <a href="/admin/">Dashboard</a> › <a href="{% url 'auctions:detail' auction.pk %}">Auction {{ auction.loan.loan_no }}</a> › Cancel
+  </div>
+  <div class="vh-card">
+    <h1 style="margin:0 0 8px;color:#c46616;font-size:20px">Cancel auction</h1>
+    <p>Use this if the borrower has settled the loan and the auction is no longer required.</p>
+    <form method="post" style="margin-top:14px;display:flex;gap:8px">{% csrf_token %}
+      <button type="submit" class="vh-btn vh-btn-danger">
+        <span class="material-symbols-outlined">cancel</span>Cancel auction</button>
+      <a href="{% url 'auctions:detail' auction.pk %}" class="vh-btn vh-btn-ghost">Back</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

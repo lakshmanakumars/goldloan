@@ -1,0 +1,46 @@
+# --- core ---
+Django==5.0.10
+python-decouple==3.8
+PyMySQL==1.1.1
+cryptography==43.0.3
+requests==2.32.3
+
+# --- admin / UI ---
+django-unfold==0.41.0
+django-widget-tweaks==1.5.0
+
+# --- auth ---
+django-allauth==65.3.0
+
+# --- multi-tenancy support utils ---
+django-hosts==6.0
+django-extensions==3.2.3
+
+# --- background jobs ---
+celery==5.4.0
+redis==5.2.1
+django-celery-beat==2.7.0
+django-celery-results==2.5.1
+
+# --- money / decimal handling ---
+django-money==3.5.3
+
+# --- PDFs / files ---
+WeasyPrint==63.1
+openpyxl==3.1.5
+
+# --- images (tenant logo ImageField / white-labeling) ---
+Pillow==12.2.0
+
+# --- audit ---
+django-auditlog==3.0.0
+
+# --- dev / testing ---
+ipython==8.30.0
+django-debug-toolbar==4.4.6
+pytest-django==4.9.0
+factory-boy==3.3.1
+
+# --- prod web ---
+gunicorn==23.0.0
+whitenoise==6.8.2

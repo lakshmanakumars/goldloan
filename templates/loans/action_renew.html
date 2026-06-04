@@ -1,0 +1,35 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<div style="max-width:600px;margin:32px auto;padding:0 16px;font-family:system-ui;color:#1f2937">
+  <h1 style="font-size:20px;margin:0 0 6px">Renew loan {{ loan.loan_no }}</h1>
+  <p style="color:#6b7280;font-size:13px;margin:0 0 14px">
+    Customer: <b>{{ loan.customer.name }}</b> &middot;
+    Outstanding: <b>₹{{ loan.outstanding_principal.amount|floatformat:2 }}</b><br>
+    A new loan is created with the outstanding principal. The old loan is marked Closed and linked.
+  </p>
+
+  {% include "loans/_pre_action_checks.html" %}
+
+  <form method="post" style="background:#fff;padding:16px 18px;border-radius:8px;border:1px solid #e5e7eb">
+    {% csrf_token %}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <label>Tenure (months)
+        <input type="number" name="tenure_months" value="{{ default_tenure }}" min="1" max="60" required style="display:block;width:100%;padding:6px 10px;margin-top:4px;border:1px solid #d1d5db;border-radius:6px">
+      </label>
+      <label>Rate type
+        <select name="rate_type" style="display:block;width:100%;padding:6px 10px;margin-top:4px;border:1px solid #d1d5db;border-radius:6px">
+          <option value="annual" {% if loan.rate_type == 'annual' %}selected{% endif %}>Per Annum (% p.a.)</option>
+          <option value="monthly" {% if loan.rate_type == 'monthly' %}selected{% endif %}>Per Month (% p.m.)</option>
+        </select>
+      </label>
+      <label>Interest rate %
+        <input type="number" step="0.001" name="interest_rate_pct" value="{{ loan.interest_rate_pct }}" required style="display:block;width:100%;padding:6px 10px;margin-top:4px;border:1px solid #d1d5db;border-radius:6px">
+      </label>
+    </div>
+    <div style="margin-top:18px;display:flex;gap:8px">
+      <button type="submit" {% if blockers %}disabled{% endif %} style="padding:8px 16px;background:{% if blockers %}#9ca3af{% else %}#c46616{% endif %};color:#fff;border:0;border-radius:6px;cursor:{% if blockers %}not-allowed{% else %}pointer{% endif %};font-weight:600">Renew loan</button>
+      <a href="javascript:history.back()" style="padding:8px 16px;background:#fff;color:#374151;border:1px solid #d1d5db;border-radius:6px;text-decoration:none">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

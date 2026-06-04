@@ -1,0 +1,80 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title|default:"Sign up" }} — Vaarahi Gold Finance</title>
+<link rel="stylesheet" href="{% static 'vaarahi/vaarahi.css' %}">
+<style>
+  body { margin: 0; background:
+      radial-gradient(1200px 800px at 20% -10%, #fff7ed 0%, transparent 60%),
+      radial-gradient(900px 600px at 110% 110%, #fed7aa 0%, transparent 60%),
+      #fafafa;
+      min-height: 100vh; font-family: system-ui, -apple-system, sans-serif;
+      color: #1f2937; display: flex; align-items: flex-start;
+      justify-content: center; padding: 40px 16px; }
+  .su-wrap { width: 100%; max-width: 720px; }
+  .su-header { display: flex; align-items: center; gap: 12px;
+               margin-bottom: 22px; }
+  .su-header .ring { width: 48px; height: 48px; border-radius: 50%;
+       background: #fff; color: #c46616; border: 2.5px solid #c46616;
+       display: flex; align-items: center; justify-content: center;
+       font-family: Georgia, serif; font-size: 26px; font-weight: 700; }
+  .su-header .brand-name { font-family: Georgia, serif; font-size: 22px;
+       color: #c46616; font-weight: 600; }
+  .su-header .brand-sub { font-size: 10px; color: #6b7280;
+       letter-spacing: .3em; text-transform: uppercase; margin-top: 2px; }
+  .su-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px;
+       box-shadow: 0 10px 36px rgba(196,102,22,.08); padding: 28px 32px; }
+  .su-card h1 { font-size: 22px; margin: 0 0 6px; color: #1f2937; }
+  .su-card .sub { color: #6b7280; font-size: 13px; margin: 0 0 22px; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 11px; color: #6b7280;
+       text-transform: uppercase; letter-spacing: .07em; font-weight: 700;
+       margin-bottom: 4px; }
+  .field input { width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb;
+       border-radius: 6px; font-size: 14px; box-sizing: border-box;
+       color: #1f2937; background: #fafafa; }
+  .field input:focus { outline: 2px solid #fed7aa; outline-offset: 0;
+       border-color: #c46616; background: #fff; }
+  .field .help { font-size: 11px; color: #6b7280; margin-top: 4px; }
+  .field .err { font-size: 12px; color: #991B1B; margin-top: 4px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 560px) { .row2 { grid-template-columns: 1fr; } }
+  .submit-row { display: flex; justify-content: space-between;
+       align-items: center; margin-top: 18px; gap: 12px; flex-wrap: wrap; }
+  .submit { background: #c46616; color: #fff; border: 0; padding: 12px 24px;
+       border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .submit:hover { background: #a24d11; }
+  .helper { font-size: 11px; color: #6b7280; }
+  .helper a { color: #c46616; }
+  .slug-suffix { background: #fff7ed; color: #c46616; padding: 10px 12px;
+       border: 1px solid #e5e7eb; border-left: 0; border-radius: 0 6px 6px 0;
+       font-size: 12px; font-family: ui-monospace, monospace;
+       display: inline-flex; align-items: center; }
+  .slug-wrap { display: flex; }
+  .slug-wrap input { border-radius: 6px 0 0 6px; }
+  .slug-status { font-size: 11px; margin-top: 4px; min-height: 16px; }
+  .slug-status.ok  { color: #047857; }
+  .slug-status.bad { color: #991B1B; }
+</style>
+</head>
+<body>
+<div class="su-wrap">
+  <div class="su-header">
+    <div class="ring">V</div>
+    <div>
+      <div class="brand-name">Vaarahi Gold Finance</div>
+      <div class="brand-sub">Self-service signup</div>
+    </div>
+  </div>
+  <div class="su-card">
+    {% block content %}{% endblock %}
+  </div>
+  <p style="text-align:center;font-size:11px;color:#6b7280;margin-top:18px">
+    Already have an account?
+    <a href="/admin/login/" style="color:#c46616">Sign in</a>
+  </p>
+</div>
+{% block scripts %}{% endblock %}
+</body></html>

@@ -1,0 +1,431 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: goldloan 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2026-05-19 23:30+0530\n"
+"Language-Team: Hindi\n"
+"Language: hi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Male"
+msgstr "पुरुष"
+
+msgid "Female"
+msgstr "स्त्री"
+
+msgid "Other"
+msgstr "अन्य"
+
+msgid "Notes"
+msgstr "नोट्स"
+
+msgid "Preferred language"
+msgstr "पसंदीदा भाषा"
+
+msgid "English (India)"
+msgstr "अंग्रेज़ी (भारत)"
+
+msgid "Telugu"
+msgstr "तेलुगु"
+
+msgid "Hindi"
+msgstr "हिंदी"
+
+msgid "Used for SMS / WhatsApp reminders sent to this customer."
+msgstr "इस ग्राहक को भेजे जाने वाले SMS / WhatsApp रिमाइंडर के लिए उपयोग।"
+
+msgid "Trial"
+msgstr "परीक्षण"
+
+msgid "Active"
+msgstr "सक्रिय"
+
+msgid "Suspended"
+msgstr "निलंबित"
+
+msgid "Starter"
+msgstr "स्टार्टर"
+
+msgid "Growth"
+msgstr "विकास"
+
+msgid "Pro"
+msgstr "प्रो"
+
+msgid "Business name"
+msgstr "व्यवसाय का नाम"
+
+msgid "Subdomain"
+msgstr "सबडोमेन"
+
+msgid "Used as subdomain: <slug>.goldloan.in"
+msgstr "सबडोमेन के रूप में उपयोग: <slug>.goldloan.in"
+
+msgid "Default language"
+msgstr "डिफ़ॉल्ट भाषा"
+
+msgid "Default UI language for this broker's staff."
+msgstr "इस ब्रोकर के स्टाफ की डिफ़ॉल्ट UI भाषा।"
+
+msgid "Tenant"
+msgstr "टेनेंट"
+
+msgid "Null = platform super-admin."
+msgstr "शून्य = प्लेटफ़ॉर्म सुपर-एडमिन।"
+
+msgid "Phone"
+msgstr "फोन"
+
+msgid "Is tenant owner"
+msgstr "क्या टेनेंट मालिक है"
+
+msgid "Tenant owners can manage their tenant settings & users."
+msgstr "टेनेंट मालिक अपने टेनेंट सेटिंग्स और उपयोगकर्ताओं को प्रबंधित कर सकते हैं।"
+
+msgid "Preferred UI language"
+msgstr "पसंदीदा UI भाषा"
+
+msgid "Overrides the tenant default. Blank = use tenant default."
+msgstr "टेनेंट डिफ़ॉल्ट को ओवरराइड करता है। खाली = टेनेंट डिफ़ॉल्ट का उपयोग करें।"
+
+msgid "Overdue"
+msgstr "अतिदेय"
+
+msgid "Closed"
+msgstr "बंद"
+
+msgid "Auctioned"
+msgstr "नीलाम"
+
+msgid "Per Annum (% p.a.)"
+msgstr "प्रति वर्ष (% p.a.)"
+
+msgid "Per Month (% p.m.)"
+msgstr "प्रति माह (% p.m.)"
+
+msgid "Cash"
+msgstr "नकद"
+
+msgid "UPI"
+msgstr "UPI"
+
+msgid "Bank Transfer"
+msgstr "बैंक ट्रांसफर"
+
+msgid "WhatsApp"
+msgstr "व्हाट्सऐप"
+
+msgid "SMS"
+msgstr "एसएमएस"
+
+msgid "Email"
+msgstr "ईमेल"
+
+msgid "Log only"
+msgstr "केवल लॉग"
+
+msgid "Pending"
+msgstr "लंबित"
+
+msgid "Sent"
+msgstr "भेजा गया"
+
+msgid "Failed"
+msgstr "विफल"
+
+msgid "Skipped"
+msgstr "छोड़ दिया गया"
+
+msgid "Outstanding Principal"
+msgstr "बकाया मूलधन"
+
+msgid "Loan-book Networth"
+msgstr "लोन-बुक नेटवर्थ"
+
+msgid "Outstanding + accrued unpaid interest"
+msgstr "बकाया + संचित अप्रदत्त ब्याज"
+
+msgid "Interest This Month"
+msgstr "इस माह का ब्याज"
+
+msgid "Cash received as interest (MTD)"
+msgstr "ब्याज के रूप में प्राप्त नकद (MTD)"
+
+msgid "Overdue Loans"
+msgstr "अतिदेय लोन"
+
+msgid "Loans needing attention"
+msgstr "ध्यान देने योग्य लोन"
+
+msgid "Lifetime Disbursed"
+msgstr "आजीवन वितरित"
+
+msgid "All loans ever made"
+msgstr "अब तक के सभी लोन"
+
+msgid "Lifetime Interest Earned"
+msgstr "आजीवन अर्जित ब्याज"
+
+msgid "Total profit before costs"
+msgstr "लागत से पहले कुल लाभ"
+
+msgid "%(name)s — Dashboard"
+msgstr "%(name)s — डैशबोर्ड"
+
+msgid "%(n)d active loan(s)"
+msgstr "%(n)d सक्रिय लोन"
+
+msgid "Daily Cash Book"
+msgstr "दैनिक नकद बही"
+
+msgid "Monthly Summary"
+msgstr "मासिक सारांश"
+
+msgid "Outstanding Portfolio"
+msgstr "बकाया पोर्टफोलियो"
+
+msgid "Interest Earned"
+msgstr "अर्जित ब्याज"
+
+msgid "Brokers Onboarded"
+msgstr "ऑनबोर्ड किए गए ब्रोकर"
+
+msgid "Tenants on the platform"
+msgstr "प्लेटफ़ॉर्म पर टेनेंट"
+
+msgid "Platform Outstanding"
+msgstr "प्लेटफ़ॉर्म बकाया"
+
+msgid "%(n)d active loan(s) across all brokers"
+msgstr "सभी ब्रोकरों में %(n)d सक्रिय लोन"
+
+msgid "Platform Networth (loan-book)"
+msgstr "प्लेटफ़ॉर्म नेटवर्थ (लोन-बुक)"
+
+msgid "Sum of all broker loan books"
+msgstr "सभी ब्रोकर लोन बुक का योग"
+
+msgid "Platform Interest Earned"
+msgstr "प्लेटफ़ॉर्म अर्जित ब्याज"
+
+msgid "Lifetime, all brokers"
+msgstr "आजीवन, सभी ब्रोकर"
+
+msgid "Total cash deployed on platform"
+msgstr "प्लेटफ़ॉर्म पर तैनात कुल नकद"
+
+msgid "Across all brokers"
+msgstr "सभी ब्रोकरों में"
+
+msgid "Platform Dashboard"
+msgstr "प्लेटफ़ॉर्म डैशबोर्ड"
+
+msgid "Per-broker Snapshot"
+msgstr "प्रति-ब्रोकर स्नैपशॉट"
+
+msgid "Platform Exposure"
+msgstr "प्लेटफ़ॉर्म एक्सपोज़र"
+
+msgid "Daily Cash Book — %(d)s"
+msgstr "दैनिक नकद बही — %(d)s"
+
+msgid "Monthly Cash Summary"
+msgstr "मासिक नकद सारांश"
+
+msgid "Monthly Cash Summary — %(y)s"
+msgstr "मासिक नकद सारांश — %(y)s"
+
+msgid "Outstanding Loan Portfolio"
+msgstr "बकाया लोन पोर्टफोलियो"
+
+msgid "Interest Earned — %(f)s to %(t)s"
+msgstr "अर्जित ब्याज — %(f)s से %(t)s तक"
+
+msgid "Statement — %(name)s"
+msgstr "स्टेटमेंट — %(name)s"
+
+msgid "Per-broker Portfolio Snapshot"
+msgstr "प्रति-ब्रोकर पोर्टफोलियो स्नैपशॉट"
+
+msgid "Platform-wide Exposure"
+msgstr "प्लेटफ़ॉर्म-व्यापी एक्सपोज़र"
+
+msgid "Apply"
+msgstr "लागू करें"
+
+msgid "Download Excel"
+msgstr "एक्सेल डाउनलोड"
+
+msgid "Date"
+msgstr "तारीख"
+
+msgid "Year"
+msgstr "वर्ष"
+
+msgid "From"
+msgstr "से"
+
+msgid "To"
+msgstr "तक"
+
+msgid "Total OUT (disbursed)"
+msgstr "कुल OUT (वितरित)"
+
+msgid "Total IN (received)"
+msgstr "कुल IN (प्राप्त)"
+
+msgid "Net flow"
+msgstr "शुद्ध प्रवाह"
+
+msgid "Positive = cash gained today"
+msgstr "धनात्मक = आज प्राप्त नकद"
+
+msgid "Time"
+msgstr "समय"
+
+msgid "Type"
+msgstr "प्रकार"
+
+msgid "Ref"
+msgstr "संदर्भ"
+
+msgid "Party"
+msgstr "पक्ष"
+
+msgid "Note"
+msgstr "नोट"
+
+msgid "Out"
+msgstr "बाहर"
+
+msgid "In"
+msgstr "अंदर"
+
+msgid "Running"
+msgstr "चालू"
+
+msgid "Totals"
+msgstr "कुल"
+
+msgid "No cash movements on this date."
+msgstr "इस तारीख में कोई नकद लेन-देन नहीं।"
+
+msgid "Disbursed (OUT)"
+msgstr "वितरित (OUT)"
+
+msgid "Received (IN)"
+msgstr "प्राप्त (IN)"
+
+msgid "Interest earned"
+msgstr "अर्जित ब्याज"
+
+msgid "Total interest earned"
+msgstr "कुल अर्जित ब्याज"
+
+msgid "Month"
+msgstr "महीना"
+
+msgid "Total"
+msgstr "कुल"
+
+msgid "All active and overdue loans"
+msgstr "सभी सक्रिय और अतिदेय लोन"
+
+msgid "Loans"
+msgstr "लोन"
+
+msgid "Total principal"
+msgstr "कुल मूलधन"
+
+msgid "Total outstanding"
+msgstr "कुल बकाया"
+
+msgid "Loan #"
+msgstr "लोन #"
+
+msgid "Customer"
+msgstr "ग्राहक"
+
+msgid "Principal"
+msgstr "मूलधन"
+
+msgid "Paid P"
+msgstr "भुगतान मू"
+
+msgid "Paid I"
+msgstr "भुगतान ब्या"
+
+msgid "Outstanding"
+msgstr "बकाया"
+
+msgid "Start"
+msgstr "शुरुआत"
+
+msgid "Maturity"
+msgstr "परिपक्वता"
+
+msgid "Days"
+msgstr "दिन"
+
+msgid "Rate"
+msgstr "दर"
+
+msgid "Status"
+msgstr "स्थिति"
+
+msgid "No active loans yet. Create your first loan from the admin."
+msgstr "अभी तक कोई सक्रिय लोन नहीं। एडमिन से अपना पहला लोन बनाएं।"
+
+msgid "Receipts in range"
+msgstr "सीमा में रसीदें"
+
+msgid "Paid at"
+msgstr "भुगतान तिथि"
+
+msgid "Interest"
+msgstr "ब्याज"
+
+msgid "Mode"
+msgstr "माध्यम"
+
+msgid "Receipt #"
+msgstr "रसीद #"
+
+msgid "No interest receipts in this range."
+msgstr "इस सीमा में कोई ब्याज रसीद नहीं।"
+
+msgid "Outstanding principal"
+msgstr "बकाया मूलधन"
+
+msgid "Active + overdue loans"
+msgstr "सक्रिय + अतिदेय लोन"
+
+msgid "Lifetime disbursed"
+msgstr "आजीवन वितरित"
+
+msgid "Lifetime received (P+I)"
+msgstr "आजीवन प्राप्त (मू+ब्या)"
+
+msgid "Cash collected since inception"
+msgstr "शुरुआत से एकत्रित नकद"
+
+msgid "Lifetime interest earned"
+msgstr "आजीवन अर्जित ब्याज"
+
+msgid "Profit before operating costs"
+msgstr "परिचालन लागत से पहले लाभ"
+
+msgid "This month interest"
+msgstr "इस माह का ब्याज"
+
+msgid "Loan portfolio status"
+msgstr "लोन पोर्टफोलियो स्थिति"
+
+msgid "Count"
+msgstr "संख्या"
+
+msgid "Django administration"
+msgstr "जैंगो प्रशासन"

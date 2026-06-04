@@ -1,0 +1,31 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'vaarahi/vaarahi.css' %}">{% endblock %}
+{% block content %}
+<div class="vh-detail" style="max-width:640px">
+  <div class="vh-crumb">
+    <a href="/admin/">Dashboard</a> › <a href="{% url 'auctions:detail' auction.pk %}">Auction {{ auction.loan.loan_no }}</a> › Schedule
+  </div>
+  <div class="vh-card">
+    <h1 style="margin:0 0 8px;color:#c46616;font-size:20px">Schedule auction</h1>
+    <p style="color:#6b7280;font-size:13px">
+      Loan <strong>{{ auction.loan.loan_no }}</strong> · borrower <strong>{{ auction.loan.customer.name }}</strong>.
+    </p>
+    <form method="post" style="margin-top:14px">{% csrf_token %}
+      <div style="margin-bottom:12px">
+        <label style="display:block;font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:4px">Date and time *</label>
+        <input type="datetime-local" name="scheduled_at" required style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:6px">
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="display:block;font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:4px">Location *</label>
+        <input type="text" name="location" required placeholder="e.g. Main Branch — {{ tenant_name }}" style="width:100%;padding:8px 10px;border:1px solid #e5e7eb;border-radius:6px;box-sizing:border-box">
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button type="submit" class="vh-btn vh-btn-primary">
+          <span class="material-symbols-outlined">event</span>Schedule</button>
+        <a href="{% url 'auctions:detail' auction.pk %}" class="vh-btn vh-btn-ghost">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

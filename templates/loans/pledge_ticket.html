@@ -1,0 +1,210 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pledge Ticket {{ loan.loan_no }}</title>
+<style>
+  @page { size: A4; margin: 14mm 14mm 16mm 14mm; }
+  body { font-family: "Noto Sans", "Lohit Telugu", "Lohit Devanagari", sans-serif;
+         font-size: 11pt; color: #7c2d12; line-height: 1.45;
+         background: #f9fafb; }
+
+  .frame { border: 2px solid #c46616; border-radius: 6px; padding: 4mm;
+           position: relative; }
+  .frame::before {
+    content: ""; position: absolute; inset: 3mm;
+    border: 0.6pt dashed #f59e0b; opacity: .55; pointer-events: none;
+    border-radius: 4px;
+  }
+
+  .head { display: table; width: 100%;
+          border-bottom: 3px solid #f59e0b; padding-bottom: 8px; margin-bottom: 10px; }
+  .head .brand { display: table-cell; vertical-align: bottom; }
+  .head .meta  { display: table-cell; text-align: right; vertical-align: bottom; }
+  .head .brand .vname { font-family: Georgia, serif; font-size: 24pt;
+                        color: #c46616; font-weight: 600; line-height: 1; }
+  .head .brand .vsub  { font-size: 9pt; color: #6b7280; letter-spacing: .3em;
+                        text-transform: uppercase; margin-top: 4px; }
+  .head .brand .vital { font-family: Georgia, serif; font-style: italic;
+                        color: #6b7280; font-size: 9pt; margin-top: 2px; }
+  .head .meta .ticket { display: inline-block; background: #c46616;
+                        color: #fde68a; padding: 6px 14px; border-radius: 5px;
+                        font-size: 9pt; letter-spacing: .2em;
+                        text-transform: uppercase; font-weight: 700; }
+  .head .meta .num { font-family: Georgia, serif; font-size: 18pt;
+                     color: #c46616; font-weight: 700; margin-top: 6px; }
+  .head .meta .date { font-size: 9pt; color: #6b7280; margin-top: 2px; }
+
+  h1 { font-family: Georgia, serif; font-size: 13pt; margin: 12px 0 6px;
+       color: #c46616; border-bottom: 1px solid #f59e0b; padding-bottom: 3px; }
+  .small { font-size: 8.5pt; color: #6b7280; }
+
+  table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+  th { background: #c46616; color: #fde68a; padding: 6px 8px; text-align: left;
+       font-size: 8.5pt; text-transform: uppercase; letter-spacing: .04em;
+       border-bottom: 1.5px solid #f59e0b; }
+  td { padding: 6px 8px; border-bottom: 0.5pt solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: rgba(201,169,97,.06); }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  .grid2 { display: table; width: 100%; border-spacing: 8px; }
+  .grid2 .col { display: table-cell; width: 50%; vertical-align: top;
+                background: #fff; padding: 8px 12px; border: 1px solid #e5e7eb;
+                border-radius: 4px; }
+
+  .kv { width: 100%; }
+  .kv td { padding: 3px 6px; border: 0; }
+  .kv td:first-child { color: #6b7280; width: 40%; }
+  .kv td:nth-child(2) { font-weight: 600; color: #c46616; }
+
+  tfoot tr { background: #FEF3C7 !important; }
+  tfoot td { font-weight: 700; border-top: 1.5px solid #f59e0b; }
+
+  .bilingual { display: table; width: 100%; border-spacing: 6px; margin-top: 8px; }
+  .bilingual .col { display: table-cell; width: 50%; vertical-align: top;
+                    background: #fff; padding: 8px 10px;
+                    border: 1px solid #e5e7eb; border-radius: 4px;
+                    font-size: 9pt; }
+  .bilingual b { color: #c46616; }
+
+  .sign { display: table; width: 100%; margin-top: 22px; }
+  .sign .slot { display: table-cell; width: 50%; padding: 0 32px;
+                border-top: 1px solid #c46616; padding-top: 4px;
+                font-size: 9pt; text-align: center; color: #6b7280; }
+
+  .vlogo { display: inline-block; vertical-align: middle; margin-right: 6px;
+           width: 24px; height: 24px; border-radius: 50%;
+           background: #f59e0b; color: #c46616;
+           text-align: center; font-family: Georgia, serif;
+           font-size: 16pt; font-weight: 700; line-height: 24px; }
+</style>
+</head>
+<body>
+
+<div class="frame">
+
+<div class="head">
+  <div class="brand">
+    <div class="vname"><span class="vlogo">V</span> {{ tenant.name }}</div>
+    <div class="vsub">Gold Finance</div>
+    <div class="vital">Your gold, our trust</div>
+    <div class="small" style="margin-top:6px">
+      {% if tenant.address %}{{ tenant.address }}<br>{% endif %}
+      {% if tenant.license_no %}License {{ tenant.license_no }} · {% endif %}
+      {% if tenant.gst_no %}GST {{ tenant.gst_no }} · {% endif %}
+      ☎ {{ tenant.contact_phone }}
+    </div>
+  </div>
+  <div class="meta">
+    <div class="ticket">Pledge Ticket</div>
+    <div class="num">{{ loan.loan_no }}</div>
+    <div class="date">Issued: {{ today|date:"d M Y" }}</div>
+  </div>
+</div>
+
+<div class="grid2">
+  <div class="col">
+    <h1 style="margin-top:0">Borrower</h1>
+    <table class="kv">
+      <tr><td>Name</td><td>{{ customer.name }}</td></tr>
+      <tr><td>Phone</td><td>{{ customer.phone }}</td></tr>
+      <tr><td>Customer Code</td><td>{{ customer.code }}</td></tr>
+      {% if customer.pan %}<tr><td>PAN</td><td>{{ customer.pan }}</td></tr>{% endif %}
+      {% if customer.aadhaar %}<tr><td>Aadhaar</td><td>{{ customer.aadhaar_masked }}</td></tr>{% endif %}
+      {% if customer.address_line1 %}
+      <tr><td>Address</td><td>
+        {{ customer.address_line1 }}{% if customer.address_line2 %}, {{ customer.address_line2 }}{% endif %}<br>
+        {{ customer.city }}{% if customer.state %}, {{ customer.state }}{% endif %} {{ customer.pincode }}
+      </td></tr>
+      {% endif %}
+    </table>
+  </div>
+
+  <div class="col">
+    <h1 style="margin-top:0">Loan</h1>
+    <table class="kv">
+      <tr><td>Principal</td><td>₹ {{ loan.principal.amount|floatformat:2 }}</td></tr>
+      <tr><td>Rate</td><td>
+        {{ loan.interest_rate_pct }}%
+        {% if loan.rate_type == 'monthly' %}per month{% else %}per annum{% endif %}
+        (APR {{ annual_rate }}%)
+      </td></tr>
+      <tr><td>Monthly Interest</td><td>₹ {{ monthly_interest.amount|floatformat:2 }}</td></tr>
+      <tr><td>Tenure</td><td>{{ loan.tenure_months }} months</td></tr>
+      <tr><td>Start Date</td><td>{{ loan.start_date|date:"d M Y" }}</td></tr>
+      <tr><td>Maturity Date</td><td><b>{{ loan.maturity_date|date:"d M Y" }}</b></td></tr>
+      {% if loan.packet_no %}<tr><td>Packet #</td><td>{{ loan.packet_no }}</td></tr>{% endif %}
+    </table>
+  </div>
+</div>
+
+<h1>Pledged Gold Items</h1>
+<table>
+  <thead><tr>
+    <th>#</th><th>Description</th>
+    <th class="num">Gross (g)</th>
+    <th class="num">Stone (g)</th>
+    <th class="num">Net (g)</th>
+    <th class="num">Purity (ct)</th>
+    <th class="num">Rate / g</th>
+  </tr></thead>
+  <tbody>
+    {% for it in items %}
+    <tr>
+      <td>{{ forloop.counter }}</td>
+      <td>{{ it.description }}</td>
+      <td class="num">{{ it.gross_weight_g }}</td>
+      <td class="num">{{ it.stone_weight_g }}</td>
+      <td class="num"><b>{{ it.net_weight_g }}</b></td>
+      <td class="num">{{ it.purity_carat }}</td>
+      <td class="num">{% if it.rate_per_gram %}₹ {{ it.rate_per_gram.amount|floatformat:2 }}{% else %}—{% endif %}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="7" class="small" style="text-align:center;padding:14px">
+      (no items recorded — add gold items to the loan before issuing the ticket)
+    </td></tr>
+    {% endfor %}
+  </tbody>
+  <tfoot><tr>
+    <td colspan="4" style="text-align:right">Total Net Weight</td>
+    <td class="num">{{ total_net_wt }} g</td>
+    <td colspan="2"></td>
+  </tr></tfoot>
+</table>
+
+<div class="bilingual">
+  <div class="col">
+    <b>Terms (English)</b><br>
+    1. The borrower has pledged the gold items listed above as security for the loan amount stated.<br>
+    2. Interest is payable monthly. Failure to pay for more than 30 days will mark the loan as overdue.<br>
+    3. If the loan is not repaid by the maturity date and not renewed, the pledge may be auctioned after due notice per Pawnbroker / NBFC rules.<br>
+    4. This ticket must be produced at the time of repayment or release of the pledged items.
+  </div>
+  {% if secondary_lang == 'te' %}
+  <div class="col">
+    <b>నిబంధనలు (తెలుగు)</b><br>
+    1. పైన పేర్కొన్న బంగారు వస్తువులను రుణ మొత్తానికి హామీగా రుణగ్రహీత తాకట్టుగా పెట్టారు.<br>
+    2. వడ్డీ నెలవారీగా చెల్లించాలి. 30 రోజులకు మించి వడ్డీ చెల్లించని పక్షంలో రుణం గడువు దాటినదిగా గుర్తించబడుతుంది.<br>
+    3. కాలపరిమితి తేదీలోగా రుణం తిరిగి చెల్లించని లేదా రెన్యూ చేయని పక్షంలో, నోటీసు తర్వాత తాకట్టును పాన్‌బ్రోకర్ / NBFC నిబంధనల ప్రకారం వేలం వేయవచ్చు.<br>
+    4. తిరిగి చెల్లింపు లేదా తాకట్టు విడుదల సమయంలో ఈ టికెట్‌ను తప్పనిసరిగా సమర్పించాలి.
+  </div>
+  {% elif secondary_lang == 'hi' %}
+  <div class="col">
+    <b>शर्तें (हिंदी)</b><br>
+    1. उधारकर्ता ने उपरोक्त सूचीबद्ध सोने की वस्तुओं को उल्लिखित ऋण राशि के लिए गिरवी रखा है।<br>
+    2. ब्याज का भुगतान मासिक है। 30 दिनों से अधिक समय तक ब्याज न देने पर ऋण अतिदेय चिह्नित किया जाएगा।<br>
+    3. यदि ऋण परिपक्वता तिथि तक नहीं चुकाया या नवीकरण नहीं किया जाता है, तो उचित सूचना के बाद गिरवी की नीलामी पॉनब्रोकर / NBFC नियमों के अनुसार हो सकती है।<br>
+    4. पुनर्भुगतान या गिरवी वापसी के समय यह टिकट प्रस्तुत किया जाना चाहिए।
+  </div>
+  {% endif %}
+</div>
+
+<div class="sign">
+  <div class="slot">Borrower Signature</div>
+  <div class="slot">For {{ tenant.name }}</div>
+</div>
+
+</div>
+</body>
+</html>

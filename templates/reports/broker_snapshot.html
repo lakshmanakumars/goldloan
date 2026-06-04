@@ -1,0 +1,58 @@
+{% extends "reports/base.html" %}
+{% block report %}
+<h1>Per-broker Portfolio Snapshot</h1>
+<div class="sub">All tenants on this platform</div>
+
+<form class="toolbar" method="get">
+  <a class="btn btn-outline" href="?format=xlsx">Download Excel</a>
+</form>
+
+<div class="cards">
+  <div class="card"><div class="label">Brokers</div>
+    <div class="value">{{ data.rows|length }}</div></div>
+  <div class="card"><div class="label">Platform disbursed</div>
+    <div class="value">₹{{ data.totals.disbursed|floatformat:2 }}</div></div>
+  <div class="card"><div class="label">Platform outstanding</div>
+    <div class="value">₹{{ data.totals.outstanding|floatformat:2 }}</div></div>
+  <div class="card"><div class="label">Platform interest earned</div>
+    <div class="value">₹{{ data.totals.interest|floatformat:2 }}</div></div>
+</div>
+
+{% if data.rows %}
+<table>
+  <thead><tr>
+    <th>Broker</th><th>Slug</th><th>Status</th>
+    <th class="num">Active</th><th class="num">Overdue</th>
+    <th class="num">Disbursed</th><th class="num">Received</th>
+    <th class="num">Outstanding</th><th class="num">Interest</th>
+    <th class="num">Networth</th>
+  </tr></thead>
+  <tbody>
+    {% for r in data.rows %}
+    <tr>
+      <td><a href="{{ r.tenant.subdomain_url }}admin/" target="_blank"><b>{{ r.tenant.name }}</b></a></td>
+      <td>{{ r.tenant.slug }}</td>
+      <td><span class="pill {% if r.tenant.status == 'active' %}pill-active{% elif r.tenant.status == 'suspended' %}pill-overdue{% else %}pill-closed{% endif %}">{{ r.tenant.status }}</span></td>
+      <td class="num">{{ r.active }}</td>
+      <td class="num">{{ r.overdue }}</td>
+      <td class="num">₹{{ r.disbursed|floatformat:2 }}</td>
+      <td class="num">₹{{ r.received|floatformat:2 }}</td>
+      <td class="num">₹{{ r.outstanding|floatformat:2 }}</td>
+      <td class="num">₹{{ r.interest_earned|floatformat:2 }}</td>
+      <td class="num"><b>₹{{ r.networth|floatformat:2 }}</b></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot><tr>
+    <td colspan="5">Platform totals</td>
+    <td class="num">₹{{ data.totals.disbursed|floatformat:2 }}</td>
+    <td class="num">₹{{ data.totals.received|floatformat:2 }}</td>
+    <td class="num">₹{{ data.totals.outstanding|floatformat:2 }}</td>
+    <td class="num">₹{{ data.totals.interest|floatformat:2 }}</td>
+    <td class="num">₹{{ data.totals.networth|floatformat:2 }}</td>
+  </tr></tfoot>
+</table>
+{% else %}
+<div class="empty">No brokers onboarded yet.</div>
+{% endif %}
+{% endblock %}

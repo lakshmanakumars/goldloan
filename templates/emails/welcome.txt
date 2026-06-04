@@ -1,0 +1,24 @@
+Namaste {{ owner_name }},
+
+Welcome to {{ tenant.name }} on Vaarahi Gold Finance.
+
+Your back-office is ready at:
+  {{ login_url }}
+
+Login credentials:
+  Username : {{ owner_username }}
+  Password : {{ owner_password }}
+
+Please change your password after logging in.
+
+You can now:
+ • Add customers and record their gold loans
+ • Print pledge tickets and payment receipts
+ • Send WhatsApp / Email reminders for monthly interest
+ • View daily cash book and your shop's networth
+ • Add staff with Owner / Manager / Cashier / Appraiser / Auditor roles
+
+Need help? Reply to this email.
+
+— Vaarahi Gold Finance
+{{ site_base_url }}

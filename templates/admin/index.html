@@ -1,0 +1,114 @@
+{% extends "admin/base.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}{{ block.super }}
+<link rel="stylesheet" href="{% static 'vaarahi/vaarahi.css' %}">
+{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block title %}{{ dashboard_title|default:"Dashboard" }} | {{ site_title }}{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+  <a href="{% url 'admin:index' %}">{{ site_header|default:_('Django administration') }}</a>
+</h1>
+{% endblock %}
+
+{% block content %}
+<div class="vh-detail" style="max-width:1400px">
+
+  <!-- Welcome / hero banner (light) -->
+  <div class="vh-hero-light" style="margin-bottom:18px">
+    <div class="avatar">V</div>
+    <div style="flex:1">
+      <h1 style="margin:0 0 4px">
+        {% if current_tenant %}
+          Welcome back to {{ current_tenant.name }}
+        {% elif request.user.is_superuser %}
+          Platform Dashboard
+        {% else %}
+          Welcome
+        {% endif %}
+      </h1>
+      <div class="meta">
+        {% now "l, d F Y" %}
+        {% if current_tenant %}
+          &middot; <span class="vh-pill {% if current_tenant.status == 'active' %}vh-pill-active{% elif current_tenant.status == 'trial' %}vh-pill-trial{% else %}vh-pill-closed{% endif %}">{{ current_tenant.get_status_display }}</span>
+          &middot; {{ current_tenant.get_plan_display }} plan
+        {% endif %}
+      </div>
+    </div>
+    {% if report_links %}
+    <div class="actions">
+      <a href="{% url 'admin:customers_customer_add' %}" class="vh-btn vh-btn-primary">
+        <span class="material-symbols-outlined">person_add</span>New customer</a>
+      <a href="{% url 'admin:loans_loan_add' %}" class="vh-btn vh-btn-accent">
+        <span class="material-symbols-outlined">add_circle</span>New loan</a>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if kpi %}
+  <div class="vh-kpi-grid" style="margin-bottom:24px">
+    {% for c in kpi %}
+    <div class="vh-kpi">
+      <div class="vh-kpi-label">{{ c.title }}</div>
+      <div class="vh-kpi-value">{{ c.metric }}</div>
+      <div class="vh-kpi-foot">{{ c.footer }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if report_links %}
+  <div class="vh-card" style="margin-bottom:24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 18px">
+    <span style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.07em">
+      <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px;color:#f59e0b">bar_chart</span>
+      Reports
+    </span>
+    {% for title, url in report_links %}
+      <a href="{{ url }}" class="vh-btn vh-btn-ghost vh-btn-sm">{{ title }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if broker_rows %}
+  <h2 class="vh-section-title" style="margin-bottom:10px">Top brokers</h2>
+  <table class="vh-table" style="margin-bottom:24px">
+    <thead><tr>
+      <th>Broker</th>
+      <th class="vh-num">Active</th>
+      <th class="vh-num">Outstanding</th>
+      <th class="vh-num">Networth</th>
+      <th>Actions</th>
+    </tr></thead>
+    <tbody>
+      {% for r in broker_rows %}
+      <tr>
+        <td><a href="{{ r.tenant.subdomain_url }}admin/" target="_blank" style="color:#c46616;font-weight:600;text-decoration:none">{{ r.tenant.name }}</a><br>
+            <span style="font-size:11px;color:#6b7280">{{ r.tenant.slug }} · {{ r.tenant.get_plan_display }}</span></td>
+        <td class="vh-num">{{ r.active }}</td>
+        <td class="vh-num">₹{{ r.outstanding|floatformat:2 }}</td>
+        <td class="vh-num"><b>₹{{ r.networth|floatformat:2 }}</b></td>
+        <td>
+          <a href="{% url 'admin:iam_tenant_change' r.tenant.pk %}" class="vh-btn vh-btn-ghost vh-btn-sm">Edit</a>
+          <a href="{{ r.tenant.subdomain_url }}admin/" target="_blank" class="vh-btn vh-btn-accent vh-btn-sm">Open</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+</div>
+
+<!-- Render Django's app list below the custom dashboard, keeping the
+     standard admin browsing intact. -->
+<div class="flex flex-col lg:flex-row lg:gap-8" style="margin-top:24px">
+  <div class="flex-grow">
+    {% include "unfold/helpers/app_list_default.html" %}
+  </div>
+  {% include "unfold/helpers/history.html" %}
+</div>
+{% endblock %}

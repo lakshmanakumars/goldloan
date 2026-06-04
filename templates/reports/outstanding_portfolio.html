@@ -1,0 +1,58 @@
+{% extends "reports/base.html" %}
+{% load i18n %}
+{% block report %}
+<h1>{% trans "Outstanding Loan Portfolio" %}</h1>
+<div class="sub">{% trans "All active and overdue loans" %}</div>
+
+<form class="toolbar" method="get">
+  <a class="btn btn-outline" href="?format=xlsx">{% trans "Download Excel" %}</a>
+</form>
+
+<div class="cards">
+  <div class="card"><div class="label">{% trans "Loans" %}</div>
+    <div class="value">{{ data.rows|length }}</div></div>
+  <div class="card"><div class="label">{% trans "Total principal" %}</div>
+    <div class="value">₹{{ data.total_principal|floatformat:2 }}</div></div>
+  <div class="card"><div class="label">{% trans "Total outstanding" %}</div>
+    <div class="value">₹{{ data.total_outstanding|floatformat:2 }}</div></div>
+</div>
+
+{% if data.rows %}
+<table>
+  <thead><tr>
+    <th>{% trans "Loan #" %}</th><th>{% trans "Customer" %}</th><th>{% trans "Phone" %}</th>
+    <th class="num">{% trans "Principal" %}</th><th class="num">{% trans "Paid P" %}</th>
+    <th class="num">{% trans "Paid I" %}</th><th class="num">{% trans "Outstanding" %}</th>
+    <th>{% trans "Start" %}</th><th>{% trans "Maturity" %}</th><th class="num">{% trans "Days" %}</th>
+    <th>{% trans "Rate" %}</th><th>{% trans "Status" %}</th>
+  </tr></thead>
+  <tbody>
+    {% for r in data.rows %}
+    <tr>
+      <td>{{ r.loan_no }}</td>
+      <td>{{ r.customer }}</td>
+      <td>{{ r.customer_phone }}</td>
+      <td class="num">₹{{ r.principal|floatformat:2 }}</td>
+      <td class="num">₹{{ r.paid_principal|floatformat:2 }}</td>
+      <td class="num">₹{{ r.paid_interest|floatformat:2 }}</td>
+      <td class="num"><b>₹{{ r.outstanding|floatformat:2 }}</b></td>
+      <td>{{ r.start_date|date:"d M Y" }}</td>
+      <td>{{ r.maturity_date|date:"d M Y" }}</td>
+      <td class="num">{{ r.days_outstanding }}</td>
+      <td>{{ r.rate }}</td>
+      <td><span class="pill {% if r.status == 'Active' %}pill-active{% elif r.status == 'Overdue' %}pill-overdue{% else %}pill-closed{% endif %}">{{ r.status }}</span></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot><tr>
+    <td colspan="3">{% trans "Totals" %}</td>
+    <td class="num">₹{{ data.total_principal|floatformat:2 }}</td>
+    <td colspan="2"></td>
+    <td class="num">₹{{ data.total_outstanding|floatformat:2 }}</td>
+    <td colspan="5"></td>
+  </tr></tfoot>
+</table>
+{% else %}
+<div class="empty">{% trans "No active loans yet. Create your first loan from the admin." %}</div>
+{% endif %}
+{% endblock %}

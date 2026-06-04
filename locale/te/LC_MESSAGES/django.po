@@ -1,0 +1,431 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: goldloan 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2026-05-19 23:30+0530\n"
+"Language-Team: Telugu\n"
+"Language: te\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Male"
+msgstr "పురుషుడు"
+
+msgid "Female"
+msgstr "స్త్రీ"
+
+msgid "Other"
+msgstr "ఇతర"
+
+msgid "Notes"
+msgstr "గమనికలు"
+
+msgid "Preferred language"
+msgstr "ఇష్టమైన భాష"
+
+msgid "English (India)"
+msgstr "ఇంగ్లీష్ (భారత)"
+
+msgid "Telugu"
+msgstr "తెలుగు"
+
+msgid "Hindi"
+msgstr "హిందీ"
+
+msgid "Used for SMS / WhatsApp reminders sent to this customer."
+msgstr "ఈ ఖాతాదారుకు పంపే SMS / వాట్సాప్ రిమైండర్‌లకు ఉపయోగించబడుతుంది."
+
+msgid "Trial"
+msgstr "ట్రయల్"
+
+msgid "Active"
+msgstr "క్రియాశీలం"
+
+msgid "Suspended"
+msgstr "నిలిపివేయబడింది"
+
+msgid "Starter"
+msgstr "స్టార్టర్"
+
+msgid "Growth"
+msgstr "వృద్ధి"
+
+msgid "Pro"
+msgstr "ప్రో"
+
+msgid "Business name"
+msgstr "వ్యాపార పేరు"
+
+msgid "Subdomain"
+msgstr "సబ్‌డొమైన్"
+
+msgid "Used as subdomain: <slug>.goldloan.in"
+msgstr "సబ్‌డొమైన్‌గా ఉపయోగించబడుతుంది: <slug>.goldloan.in"
+
+msgid "Default language"
+msgstr "డిఫాల్ట్ భాష"
+
+msgid "Default UI language for this broker's staff."
+msgstr "ఈ బ్రోకర్ సిబ్బందికి డిఫాల్ట్ UI భాష."
+
+msgid "Tenant"
+msgstr "వ్యాపారి"
+
+msgid "Null = platform super-admin."
+msgstr "ఖాళీ = ప్లాట్‌ఫారమ్ సూపర్-అడ్మిన్."
+
+msgid "Phone"
+msgstr "ఫోన్"
+
+msgid "Is tenant owner"
+msgstr "వ్యాపార యజమాని"
+
+msgid "Tenant owners can manage their tenant settings & users."
+msgstr "వ్యాపార యజమానులు వారి వ్యాపార సెట్టింగ్‌లు మరియు వినియోగదారులను నిర్వహించగలరు."
+
+msgid "Preferred UI language"
+msgstr "ఇష్టమైన UI భాష"
+
+msgid "Overrides the tenant default. Blank = use tenant default."
+msgstr "వ్యాపార డిఫాల్ట్‌ను అధిగమిస్తుంది. ఖాళీ = వ్యాపార డిఫాల్ట్ ఉపయోగించండి."
+
+msgid "Overdue"
+msgstr "గడువు దాటిన"
+
+msgid "Closed"
+msgstr "మూసివేయబడింది"
+
+msgid "Auctioned"
+msgstr "వేలం వేయబడింది"
+
+msgid "Per Annum (% p.a.)"
+msgstr "వార్షికం (% p.a.)"
+
+msgid "Per Month (% p.m.)"
+msgstr "నెలవారీ (% p.m.)"
+
+msgid "Cash"
+msgstr "నగదు"
+
+msgid "UPI"
+msgstr "UPI"
+
+msgid "Bank Transfer"
+msgstr "బ్యాంక్ బదిలీ"
+
+msgid "WhatsApp"
+msgstr "వాట్సాప్"
+
+msgid "SMS"
+msgstr "SMS"
+
+msgid "Email"
+msgstr "ఇమెయిల్"
+
+msgid "Log only"
+msgstr "లాగ్ మాత్రమే"
+
+msgid "Pending"
+msgstr "పెండింగ్"
+
+msgid "Sent"
+msgstr "పంపబడింది"
+
+msgid "Failed"
+msgstr "విఫలమైంది"
+
+msgid "Skipped"
+msgstr "దాటవేయబడింది"
+
+msgid "Outstanding Principal"
+msgstr "బకాయి మూలధనం"
+
+msgid "Loan-book Networth"
+msgstr "రుణ-పుస్తక నికర విలువ"
+
+msgid "Outstanding + accrued unpaid interest"
+msgstr "బకాయి + సంచిత చెల్లించని వడ్డీ"
+
+msgid "Interest This Month"
+msgstr "ఈ నెల వడ్డీ"
+
+msgid "Cash received as interest (MTD)"
+msgstr "వడ్డీగా స్వీకరించిన నగదు (MTD)"
+
+msgid "Overdue Loans"
+msgstr "గడువు దాటిన రుణాలు"
+
+msgid "Loans needing attention"
+msgstr "దృష్టి అవసరమైన రుణాలు"
+
+msgid "Lifetime Disbursed"
+msgstr "జీవితకాల పంపిణీ"
+
+msgid "All loans ever made"
+msgstr "ఇప్పటివరకు చేసిన అన్ని రుణాలు"
+
+msgid "Lifetime Interest Earned"
+msgstr "జీవితకాల సంపాదించిన వడ్డీ"
+
+msgid "Total profit before costs"
+msgstr "ఖర్చులకు ముందు మొత్తం లాభం"
+
+msgid "%(name)s — Dashboard"
+msgstr "%(name)s — డాష్‌బోర్డ్"
+
+msgid "%(n)d active loan(s)"
+msgstr "%(n)d క్రియాశీల రుణ(లు)"
+
+msgid "Daily Cash Book"
+msgstr "రోజువారీ నగదు పుస్తకం"
+
+msgid "Monthly Summary"
+msgstr "నెలవారీ సారాంశం"
+
+msgid "Outstanding Portfolio"
+msgstr "బకాయి పోర్ట్‌ఫోలియో"
+
+msgid "Interest Earned"
+msgstr "సంపాదించిన వడ్డీ"
+
+msgid "Brokers Onboarded"
+msgstr "నమోదైన బ్రోకర్లు"
+
+msgid "Tenants on the platform"
+msgstr "ప్లాట్‌ఫారమ్‌లోని వ్యాపారులు"
+
+msgid "Platform Outstanding"
+msgstr "ప్లాట్‌ఫారమ్ బకాయి"
+
+msgid "%(n)d active loan(s) across all brokers"
+msgstr "అన్ని బ్రోకర్‌లలో %(n)d క్రియాశీల రుణ(లు)"
+
+msgid "Platform Networth (loan-book)"
+msgstr "ప్లాట్‌ఫారమ్ నికర విలువ (రుణ-పుస్తకం)"
+
+msgid "Sum of all broker loan books"
+msgstr "అన్ని బ్రోకర్ రుణ పుస్తకాల మొత్తం"
+
+msgid "Platform Interest Earned"
+msgstr "ప్లాట్‌ఫారమ్ సంపాదించిన వడ్డీ"
+
+msgid "Lifetime, all brokers"
+msgstr "జీవితకాలం, అన్ని బ్రోకర్‌లు"
+
+msgid "Total cash deployed on platform"
+msgstr "ప్లాట్‌ఫారమ్‌లో మోహరించిన మొత్తం నగదు"
+
+msgid "Across all brokers"
+msgstr "అన్ని బ్రోకర్‌లలో"
+
+msgid "Platform Dashboard"
+msgstr "ప్లాట్‌ఫారమ్ డాష్‌బోర్డ్"
+
+msgid "Per-broker Snapshot"
+msgstr "బ్రోకర్-వారీ స్నాప్‌షాట్"
+
+msgid "Platform Exposure"
+msgstr "ప్లాట్‌ఫారమ్ ఎక్స్‌పోజర్"
+
+msgid "Daily Cash Book — %(d)s"
+msgstr "రోజువారీ నగదు పుస్తకం — %(d)s"
+
+msgid "Monthly Cash Summary"
+msgstr "నెలవారీ నగదు సారాంశం"
+
+msgid "Monthly Cash Summary — %(y)s"
+msgstr "నెలవారీ నగదు సారాంశం — %(y)s"
+
+msgid "Outstanding Loan Portfolio"
+msgstr "బకాయి ఉన్న రుణ పోర్ట్‌ఫోలియో"
+
+msgid "Interest Earned — %(f)s to %(t)s"
+msgstr "సంపాదించిన వడ్డీ — %(f)s నుండి %(t)s వరకు"
+
+msgid "Statement — %(name)s"
+msgstr "స్టేట్‌మెంట్ — %(name)s"
+
+msgid "Per-broker Portfolio Snapshot"
+msgstr "బ్రోకర్-వారీ పోర్ట్‌ఫోలియో స్నాప్‌షాట్"
+
+msgid "Platform-wide Exposure"
+msgstr "ప్లాట్‌ఫారమ్-వ్యాప్త ఎక్స్‌పోజర్"
+
+msgid "Apply"
+msgstr "వర్తింపజేయండి"
+
+msgid "Download Excel"
+msgstr "ఎక్సెల్ డౌన్‌లోడ్"
+
+msgid "Date"
+msgstr "తేదీ"
+
+msgid "Year"
+msgstr "సంవత్సరం"
+
+msgid "From"
+msgstr "నుండి"
+
+msgid "To"
+msgstr "వరకు"
+
+msgid "Total OUT (disbursed)"
+msgstr "మొత్తం OUT (పంపిణీ)"
+
+msgid "Total IN (received)"
+msgstr "మొత్తం IN (స్వీకరణ)"
+
+msgid "Net flow"
+msgstr "నికర ప్రవాహం"
+
+msgid "Positive = cash gained today"
+msgstr "ధనాత్మకం = ఈ రోజు సంపాదించిన నగదు"
+
+msgid "Time"
+msgstr "సమయం"
+
+msgid "Type"
+msgstr "రకం"
+
+msgid "Ref"
+msgstr "రెఫరెన్స్"
+
+msgid "Party"
+msgstr "పక్షం"
+
+msgid "Note"
+msgstr "గమనిక"
+
+msgid "Out"
+msgstr "బయటకు"
+
+msgid "In"
+msgstr "లోనికి"
+
+msgid "Running"
+msgstr "నడుస్తున్నది"
+
+msgid "Totals"
+msgstr "మొత్తాలు"
+
+msgid "No cash movements on this date."
+msgstr "ఈ తేదీలో నగదు లావాదేవీలు లేవు."
+
+msgid "Disbursed (OUT)"
+msgstr "పంపిణీ (బయటకు)"
+
+msgid "Received (IN)"
+msgstr "స్వీకరణ (లోనికి)"
+
+msgid "Interest earned"
+msgstr "సంపాదించిన వడ్డీ"
+
+msgid "Total interest earned"
+msgstr "మొత్తం సంపాదించిన వడ్డీ"
+
+msgid "Month"
+msgstr "నెల"
+
+msgid "Total"
+msgstr "మొత్తం"
+
+msgid "All active and overdue loans"
+msgstr "అన్ని క్రియాశీల మరియు గడువు దాటిన రుణాలు"
+
+msgid "Loans"
+msgstr "రుణాలు"
+
+msgid "Total principal"
+msgstr "మొత్తం మూలధనం"
+
+msgid "Total outstanding"
+msgstr "మొత్తం బకాయి"
+
+msgid "Loan #"
+msgstr "రుణ సంఖ్య"
+
+msgid "Customer"
+msgstr "ఖాతాదారు"
+
+msgid "Principal"
+msgstr "మూలధనం"
+
+msgid "Paid P"
+msgstr "చెల్లించిన మూ"
+
+msgid "Paid I"
+msgstr "చెల్లించిన వ"
+
+msgid "Outstanding"
+msgstr "బకాయి"
+
+msgid "Start"
+msgstr "ప్రారంభం"
+
+msgid "Maturity"
+msgstr "కాలపరిమితి"
+
+msgid "Days"
+msgstr "రోజులు"
+
+msgid "Rate"
+msgstr "రేటు"
+
+msgid "Status"
+msgstr "స్థితి"
+
+msgid "No active loans yet. Create your first loan from the admin."
+msgstr "ఇంకా క్రియాశీల రుణాలు లేవు. అడ్మిన్ నుండి మీ మొదటి రుణాన్ని సృష్టించండి."
+
+msgid "Receipts in range"
+msgstr "పరిధిలోని రశీదులు"
+
+msgid "Paid at"
+msgstr "చెల్లించిన సమయం"
+
+msgid "Interest"
+msgstr "వడ్డీ"
+
+msgid "Mode"
+msgstr "విధానం"
+
+msgid "Receipt #"
+msgstr "రశీదు సంఖ్య"
+
+msgid "No interest receipts in this range."
+msgstr "ఈ పరిధిలో వడ్డీ రశీదులు లేవు."
+
+msgid "Outstanding principal"
+msgstr "బకాయి మూలధనం"
+
+msgid "Active + overdue loans"
+msgstr "క్రియాశీల + గడువు దాటిన రుణాలు"
+
+msgid "Lifetime disbursed"
+msgstr "జీవితకాల పంపిణీ"
+
+msgid "Lifetime received (P+I)"
+msgstr "జీవితకాల స్వీకరణ (మూ+వ)"
+
+msgid "Cash collected since inception"
+msgstr "ప్రారంభం నుండి సేకరించిన నగదు"
+
+msgid "Lifetime interest earned"
+msgstr "జీవితకాల సంపాదించిన వడ్డీ"
+
+msgid "Profit before operating costs"
+msgstr "నిర్వహణ ఖర్చులకు ముందు లాభం"
+
+msgid "This month interest"
+msgstr "ఈ నెల వడ్డీ"
+
+msgid "Loan portfolio status"
+msgstr "రుణ పోర్ట్‌ఫోలియో స్థితి"
+
+msgid "Count"
+msgstr "సంఖ్య"
+
+msgid "Django administration"
+msgstr "జంగో నిర్వహణ"

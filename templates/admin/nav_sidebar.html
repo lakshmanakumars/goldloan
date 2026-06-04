@@ -1,0 +1,37 @@
+{% comment %}
+Local override of unfold/templates/admin/nav_sidebar.html.
+
+Reason: the upstream toggle button is `position: fixed` with no explicit
+`left:`, so its position depends on the flex flow of an ancestor. When the
+sidebar collapses, the ancestor has zero width and the toggle can be
+visually obscured by the page header / pushed off-screen, leaving no way
+to re-open the menu.
+
+Fix: pin the collapsed toggle to `left-3` (12px from viewport edge) and
+the expanded toggle to the right of the sidebar (`left-[18rem]`). Same
+behavior otherwise.
+{% endcomment %}
+{% load i18n %}
+
+<div class="relative vh-sidebar-layer">
+    <div @click="sidebarDesktopOpen = !sidebarDesktopOpen"
+         hx-get="{% url "admin:toggle_sidebar" %}"
+         hx-swap="none"
+         class="bg-white border cursor-pointer fixed h-6 hidden items-center justify-center rounded-full text-gray-500 top-5 w-6 z-50 xl:flex dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
+         :class="{'rotate-180': !sidebarDesktopOpen}"
+         :style="sidebarDesktopOpen ? 'left: 17.25rem' : 'left: 0.75rem'">
+        <span class="material-symbols-outlined md-16">
+            first_page
+        </span>
+    </div>
+
+    <div @click="sidebarMobileOpen = !sidebarMobileOpen"
+         class="fixed bottom-0 bg-gray-700 cursor-pointer flex items-center left-0 mb-2 ml-2 justify-center px-2 py-1 rounded-full shadow-sm text-xs text-white uppercase z-50 xl:hidden"
+         :class="{'ml-72 -translate-x-1/2': sidebarMobileOpen}">
+        {% trans "Menu" %}
+    </div>
+
+    <div :class="{'xl:block': sidebarDesktopOpen, 'xl:hidden': !sidebarDesktopOpen, 'max-xl:fixed': sidebarMobileOpen, 'hidden': !sidebarMobileOpen }">
+        {% include "unfold/helpers/navigation.html" %}
+    </div>
+</div>

@@ -1,0 +1,221 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}{{ block.super }}
+<link rel="stylesheet" href="{% static 'vaarahi/vaarahi.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="vh-detail">
+
+  <div class="vh-crumb">
+    <a href="/admin/">Dashboard</a> ›
+    <a href="{% url 'admin:auctions_auction_changelist' %}">Auctions</a> ›
+    <span>{{ loan.loan_no }}</span>
+  </div>
+
+  <div class="vh-hero-light">
+    <div class="id-block">
+      <div class="small">Auction</div>
+      <div class="big">{{ loan.loan_no }}</div>
+    </div>
+    <div>
+      <h1>
+        <a href="{{ customer_url }}">{{ customer.name }}</a>
+      </h1>
+      <div class="meta">
+        {{ customer.code }} · {{ customer.phone }}{% if customer.email %} · {{ customer.email }}{% endif %}
+        <br>
+        Loan principal <strong>₹{{ loan.principal.amount|floatformat:2 }}</strong> ·
+        Outstanding <strong>₹{{ loan.outstanding_principal.amount|floatformat:2 }}</strong> ·
+        Interest due <strong>₹{{ loan.interest_due_now.amount|floatformat:2 }}</strong>
+        · Total dues <strong>₹{{ dues.amount|floatformat:2 }}</strong>
+        {% if loan.maturity_date %}· Matured {{ loan.maturity_date|date:"d M Y" }}{% endif %}
+      </div>
+    </div>
+    <div class="actions">
+      {% with s=auction.status %}
+        {% if s == 'eligible' %}
+        <span class="vh-pill" style="background:#FEE2E2;color:#991B1B">Eligible</span>
+        {% elif s == 'notice1_sent' %}
+        <span class="vh-pill" style="background:#FEF3C7;color:#92400E">Notice 1 sent</span>
+        {% elif s == 'notice2_sent' %}
+        <span class="vh-pill" style="background:#FED7AA;color:#9A3412">Notice 2 sent</span>
+        {% elif s == 'scheduled' %}
+        <span class="vh-pill" style="background:#DBEAFE;color:#1E40AF">Scheduled</span>
+        {% elif s == 'sold' %}
+        <span class="vh-pill" style="background:#E0E7FF;color:#3730A3">Sold</span>
+        {% elif s == 'posted' %}
+        <span class="vh-pill vh-pill-closed">Posted</span>
+        {% elif s == 'cancelled' %}
+        <span class="vh-pill vh-pill-active">Cancelled</span>
+        {% endif %}
+      {% endwith %}
+    </div>
+  </div>
+
+  <div class="vh-kpi-grid" style="margin-bottom:18px">
+    <div class="vh-kpi">
+      <div class="vh-kpi-label">Total dues</div>
+      <div class="vh-kpi-value">₹{{ dues.amount|floatformat:2 }}</div>
+      <div class="vh-kpi-foot">Principal + interest due</div>
+    </div>
+    <div class="vh-kpi">
+      <div class="vh-kpi-label">Eligible since</div>
+      <div class="vh-kpi-value" style="font-size:18px">{{ auction.eligible_at|date:"d M Y" }}</div>
+      <div class="vh-kpi-foot">RBI 14+14 day notice rule</div>
+    </div>
+    {% if auction.scheduled_at %}
+    <div class="vh-kpi">
+      <div class="vh-kpi-label">Auction at</div>
+      <div class="vh-kpi-value" style="font-size:18px">{{ auction.scheduled_at|date:"d M Y H:i" }}</div>
+      <div class="vh-kpi-foot">{{ auction.location|default:"Location TBD" }}</div>
+    </div>
+    {% endif %}
+    {% if auction.sold_amount %}
+    <div class="vh-kpi">
+      <div class="vh-kpi-label">Sold for</div>
+      <div class="vh-kpi-value">₹{{ auction.sold_amount.amount|floatformat:2 }}</div>
+      <div class="vh-kpi-foot">
+        {% if auction.surplus_amount.amount > 0 %}
+          Surplus ₹{{ auction.surplus_amount.amount|floatformat:2 }}
+        {% elif auction.shortfall_amount.amount > 0 %}
+          Shortfall ₹{{ auction.shortfall_amount.amount|floatformat:2 }}
+        {% else %}Exact match{% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="vh-layout">
+    <div>
+      <div class="vh-card">
+        <h3 class="vh-section-title">Pledged gold items</h3>
+        {% if items %}
+        <table class="vh-table">
+          <thead><tr>
+            <th>Description</th>
+            <th class="vh-num">Net (g)</th>
+            <th class="vh-num">Purity (ct)</th>
+            <th>Photo</th>
+          </tr></thead>
+          <tbody>
+            {% for it in items %}
+            <tr>
+              <td>{{ it.description }}</td>
+              <td class="vh-num"><b>{{ it.net_weight_g }}</b></td>
+              <td class="vh-num">{{ it.purity_carat }}</td>
+              <td>{% if it.photo %}<a href="{{ it.photo.url }}" target="_blank" class="vh-btn vh-btn-ghost vh-btn-sm">view</a>{% else %}—{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="vh-empty">No gold items recorded.</div>
+        {% endif %}
+      </div>
+
+      <div class="vh-card" style="margin-top:14px">
+        <h3 class="vh-section-title">Notice history</h3>
+        {% if notices %}
+        <table class="vh-table">
+          <thead><tr>
+            <th>Notice #</th><th>Sent at</th><th>Channels</th>
+            <th>Sent by</th><th>PDF</th>
+          </tr></thead>
+          <tbody>
+            {% for n in notices %}
+            <tr>
+              <td>#{{ n.notice_no }}</td>
+              <td>{{ n.sent_at|date:"d M Y H:i" }}</td>
+              <td>{{ n.channels|join:", "|default:"—" }}</td>
+              <td>{{ n.sent_by|default:"—" }}</td>
+              <td>
+                <a href="{% url 'auctions:notice_pdf' auction.pk n.notice_no %}" target="_blank" class="vh-btn vh-btn-accent vh-btn-sm">
+                  <span class="material-symbols-outlined">picture_as_pdf</span>PDF</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="vh-empty">No notices sent yet.</div>
+        {% endif %}
+      </div>
+
+      {% if auction.bidder_name %}
+      <div class="vh-card" style="margin-top:14px">
+        <h3 class="vh-section-title">Winning bidder</h3>
+        <div class="vh-info-row"><div class="k">Name</div><div class="v">{{ auction.bidder_name }}</div></div>
+        <div class="vh-info-row"><div class="k">Phone</div><div class="v">{{ auction.bidder_phone|default:"—" }}</div></div>
+        <div class="vh-info-row"><div class="k">ID proof</div><div class="v">{{ auction.bidder_id_proof|default:"—" }}</div></div>
+        <div class="vh-info-row"><div class="k">Sold for</div><div class="v">₹{{ auction.sold_amount.amount|floatformat:2 }}</div></div>
+        <div class="vh-info-row"><div class="k">Dues at sale</div><div class="v">₹{{ auction.total_dues_at_sale.amount|floatformat:2 }}</div></div>
+        {% if auction.surplus_amount.amount > 0 %}
+        <div class="vh-info-row"><div class="k">Surplus</div><div class="v" style="color:#166534">+ ₹{{ auction.surplus_amount.amount|floatformat:2 }}</div></div>
+        {% endif %}
+        {% if auction.shortfall_amount.amount > 0 %}
+        <div class="vh-info-row"><div class="k">Shortfall</div><div class="v" style="color:#991B1B">− ₹{{ auction.shortfall_amount.amount|floatformat:2 }}</div></div>
+        {% endif %}
+        {% if auction.surplus_refunded_at %}
+        <div class="vh-info-row"><div class="k">Surplus refunded</div><div class="v">{{ auction.surplus_refunded_at|date:"d M Y" }}</div></div>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+    <aside>
+      <div class="vh-action-card">
+        <h3>Lifecycle actions</h3>
+        <div class="stack">
+          {% if auction.can_send_notice_1 %}
+          <a href="{{ notice1_url }}" class="vh-btn vh-btn-primary">
+            <span class="material-symbols-outlined">campaign</span>Send Notice 1</a>
+          {% endif %}
+          {% if auction.can_send_notice_2 %}
+          <a href="{{ notice2_url }}" class="vh-btn vh-btn-primary">
+            <span class="material-symbols-outlined">campaign</span>Send Notice 2</a>
+          {% endif %}
+          {% if auction.can_schedule %}
+          <a href="{{ schedule_url }}" class="vh-btn vh-btn-primary">
+            <span class="material-symbols-outlined">event</span>Schedule auction</a>
+          {% endif %}
+          {% if auction.can_record_sale %}
+          <a href="{{ sale_url }}" class="vh-btn vh-btn-success">
+            <span class="material-symbols-outlined">gavel</span>Record sale</a>
+          {% endif %}
+          {% if auction.can_post_settlement %}
+          <a href="{{ post_url }}" class="vh-btn vh-btn-primary">
+            <span class="material-symbols-outlined">check_circle</span>Post settlement</a>
+          {% endif %}
+          {% if auction.is_open %}
+          <a href="{{ cancel_url }}" class="vh-btn vh-btn-ghost">
+            <span class="material-symbols-outlined">cancel</span>Cancel auction</a>
+          {% endif %}
+          <a href="{{ loan_url }}" class="vh-btn vh-btn-ghost">
+            <span class="material-symbols-outlined">account_balance_wallet</span>Open loan</a>
+        </div>
+      </div>
+
+      {% if auction.status == 'notice1_sent' and not auction.can_send_notice_2 %}
+      <div class="vh-action-card" style="background:#FEF3C7;border-color:#92400E">
+        <h3 style="color:#92400E">Waiting period</h3>
+        <p style="font-size:12px;color:#92400E">
+          Notice 2 can be sent on or after
+          <strong>{{ auction.notice1_sent_at|date:"d M Y" }}</strong> + 14 days.
+        </p>
+      </div>
+      {% endif %}
+      {% if auction.status == 'notice2_sent' and not auction.can_schedule %}
+      <div class="vh-action-card" style="background:#FED7AA;border-color:#9A3412">
+        <h3 style="color:#9A3412">Waiting period</h3>
+        <p style="font-size:12px;color:#9A3412">
+          Auction can be scheduled on or after
+          <strong>{{ auction.notice2_sent_at|date:"d M Y" }}</strong> + 14 days.
+        </p>
+      </div>
+      {% endif %}
+    </aside>
+  </div>
+</div>
+{% endblock %}

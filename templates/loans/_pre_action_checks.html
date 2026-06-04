@@ -1,0 +1,62 @@
+<div style="background:#fff;border:1px solid {% if blockers %}#fecaca{% else %}#e5e7eb{% endif %};border-radius:8px;margin:0 0 16px;font-size:13px;overflow:hidden">
+  <div style="background:{% if blockers %}#fef2f2{% else %}#f8fafc{% endif %};padding:10px 16px;font-weight:700;color:{% if blockers %}#991b1b{% else %}#334155{% endif %};border-bottom:1px solid #e5e7eb">
+    {% if blockers %}🚫 Action blocked{% else %}Before you proceed{% endif %}
+  </div>
+  {% if blockers %}
+  <div id="vh-block-reasons" style="background:#fef2f2;padding:10px 16px;color:#991b1b;border-bottom:1px solid #fecaca">
+    <ul style="margin:0;padding-left:18px">{% for e in blockers %}<li>{{ e }}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+
+  {# --- Interest settlement (old loan's unpaid interest) --- #}
+  <div style="padding:14px 16px;border-bottom:1px solid #f1f5f9">
+    <div style="font-weight:600;color:#7c2d12;margin-bottom:6px">Interest settlement</div>
+    <div style="display:flex;justify-content:space-between;padding:2px 0">
+      <span>Outstanding principal (carries to new loan)</span>
+      <strong>₹{{ outstanding.amount|floatformat:2 }}</strong>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:2px 0">
+      <span>Interest due now</span>
+      <strong style="color:{% if interest_due.amount > 0 %}#b91c1c{% else %}#047857{% endif %}">₹{{ interest_due.amount|floatformat:2 }}</strong>
+    </div>
+    {% if interest_due.amount > 0 %}
+    <div style="margin-top:8px;color:#7c2d12;line-height:1.5">
+      ⚠️ This interest is <b>not</b> carried into the new loan. Collect
+      <b>₹{{ interest_due.amount|floatformat:2 }}</b> and record it as a
+      Repayment first, or it will be lost from the books.
+      <div style="margin-top:8px">
+        <a href="{{ add_repayment_url }}" style="padding:6px 12px;background:#c46616;color:#fff;border-radius:6px;text-decoration:none;font-weight:600">Record interest payment first &rarr;</a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  {# --- LTV check (new loan's principal vs collateral) --- #}
+  <div style="padding:14px 16px">
+    <div style="font-weight:600;color:#334155;margin-bottom:6px">LTV check (cap {{ ltv.max_ltv_pct }}%)</div>
+    <div style="display:flex;justify-content:space-between;padding:2px 0">
+      <span>Current gold value</span>
+      <strong>₹{{ ltv.gross_value|floatformat:2 }}</strong>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:2px 0">
+      <span>Eligible principal @ {{ ltv.max_ltv_pct }}%</span>
+      <strong>₹{{ ltv.eligible_principal|floatformat:2 }}</strong>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:6px 0 2px;border-top:1px dashed #e5e7eb;margin-top:4px">
+      <span>{% if is_topup %}Top-up headroom within cap{% else %}Headroom within cap{% endif %}</span>
+      <strong style="color:{% if ltv_headroom < 0 %}#b91c1c{% else %}#047857{% endif %}">₹{{ ltv_headroom|floatformat:2 }}</strong>
+    </div>
+    {% if ltv_headroom < 0 %}
+    <div style="margin-top:8px;color:#7c2d12;line-height:1.5">
+      ⚠️ Outstanding already <b>exceeds</b> the {{ ltv.max_ltv_pct }}% LTV cap on the current gold value.
+      {% if is_topup %}Any top-up increases the breach.{% else %}This renewal carries an over-LTV loan forward.{% endif %}
+      Proceed only with manager approval.
+    </div>
+    {% elif is_topup %}
+    <div style="margin-top:8px;color:#475569">
+      You can top up about <b>₹{{ ltv_headroom|floatformat:2 }}</b> more and stay within the {{ ltv.max_ltv_pct }}% cap.
+    </div>
+    {% endif %}
+    {% for w in ltv.warnings %}<div style="margin-top:6px;color:#92400e">• {{ w }}</div>{% endfor %}
+  </div>
+</div>

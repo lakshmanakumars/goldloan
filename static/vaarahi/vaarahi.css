@@ -1,0 +1,464 @@
+/* ====================================================================
+   Vaarahi Gold Finance — overlay (ORIGINAL orange theme restored)
+   Primary orange #c46616 · gray text · white surfaces
+   Brand identity ('V' monogram, Vaarahi wordmark) preserved.
+   ====================================================================*/
+
+/* ---- design tokens ---------------------------------------------------*/
+:root {
+  --vh-primary:        #c46616;
+  --vh-primary-dark:   #a24d11;
+  --vh-primary-soft:   #fff7ed;
+  --vh-accent:         #f59e0b;     /* amber accent */
+  --vh-accent-light:   #fde68a;
+  --vh-muted:          #6b7280;
+  --vh-ink:            #1f2937;
+  --vh-border:         #e5e7eb;
+  --vh-row-alt:        #fafafa;
+  --vh-row-hover:      #fff7ed;
+  --vh-highlight:      #fef3c7;
+
+  --vh-shadow-sm: 0 1px 2px rgba(0,0,0,.05);
+  --vh-shadow-md: 0 4px 16px rgba(0,0,0,.08);
+}
+
+/* ---- buttons --------------------------------------------------------*/
+.vh-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 6px;
+  font-size: 13px; font-weight: 600; line-height: 1;
+  text-decoration: none; cursor: pointer;
+  border: 1px solid transparent;
+  transition: background .12s ease, color .12s ease, border-color .12s ease,
+              box-shadow .12s ease, transform .04s ease;
+  white-space: nowrap;
+}
+.vh-btn:focus-visible {
+  outline: 2px solid var(--vh-accent-light); outline-offset: 2px;
+}
+.vh-btn:active { transform: translateY(1px); }
+.vh-btn .material-symbols-outlined { font-size: 16px; }
+
+.vh-btn-primary  { background: var(--vh-primary); color: #fff; }
+.vh-btn-primary:hover  { background: var(--vh-primary-dark); }
+
+.vh-btn-accent   { background: var(--vh-accent); color: #fff; }
+.vh-btn-accent:hover   { background: #d97706; }
+
+.vh-btn-ghost    { background: #fff; color: var(--vh-primary);
+                   border-color: var(--vh-primary); }
+.vh-btn-ghost:hover    { background: var(--vh-primary-soft); }
+
+.vh-btn-success  { background: #047857; color: #fff; }
+.vh-btn-success:hover  { background: #036046; }
+
+.vh-btn-danger   { background: #B91C1C; color: #fff; }
+.vh-btn-danger:hover   { background: #991b1b; }
+
+.vh-btn-whatsapp { background: #25D366; color: #fff; }
+.vh-btn-whatsapp:hover { background: #1ebe5d; }
+
+.vh-btn-sm { padding: 4px 10px; font-size: 11.5px; }
+.vh-btn-lg { padding: 10px 20px; font-size: 14px; }
+
+/* ---- status pills ---------------------------------------------------*/
+.vh-pill {
+  display: inline-block; padding: 2px 10px; border-radius: 999px;
+  font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .04em; line-height: 1.6;
+}
+.vh-pill-active  { background: #DCFCE7; color: #166534; }
+.vh-pill-overdue { background: #FEE2E2; color: #991B1B; }
+.vh-pill-closed  { background: var(--vh-border); color: #374151; }
+.vh-pill-trial   { background: var(--vh-highlight); color: #92400E; }
+.vh-pill-gold    { background: var(--vh-accent); color: #fff; }
+
+/* ---- KPI cards (calmer: dark text, subtle accent strip) ------------*/
+.vh-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+.vh-kpi {
+  background: #fff;
+  border: 1px solid var(--vh-border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  position: relative;
+  box-shadow: var(--vh-shadow-sm);
+  overflow: hidden;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.vh-kpi:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--vh-shadow-md);
+}
+.vh-kpi::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--vh-primary);
+  opacity: .8;
+}
+.vh-kpi-label {
+  font-size: 11px; color: var(--vh-muted); font-weight: 600;
+  text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px;
+}
+.vh-kpi-value {
+  font-size: 26px; font-weight: 700;
+  color: var(--vh-ink); line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+.vh-kpi-foot {
+  margin-top: 6px; font-size: 12px; color: var(--vh-muted);
+}
+
+/* ---- data tables (lighter: cream header, orange text) --------------*/
+.vh-table {
+  width: 100%; border-collapse: collapse;
+  background: #fff; border-radius: 8px; overflow: hidden;
+  box-shadow: var(--vh-shadow-sm); border: 1px solid var(--vh-border);
+}
+.vh-table th {
+  background: var(--vh-primary-soft);
+  color: var(--vh-primary);
+  text-align: left; padding: 10px 12px;
+  font-size: 11px; text-transform: uppercase; letter-spacing: .06em;
+  font-weight: 700;
+  border-bottom: 2px solid var(--vh-primary);
+}
+.vh-table td {
+  padding: 10px 12px; border-bottom: 1px solid #f3f4f6;
+  font-size: 13.5px; color: var(--vh-ink); vertical-align: top;
+  background: #fff;
+}
+.vh-table tbody tr:nth-child(even) td { background: var(--vh-row-alt); }
+.vh-table tbody tr:hover td { background: var(--vh-row-hover); }
+.vh-table tfoot td {
+  background: var(--vh-primary-soft) !important;
+  color: var(--vh-primary);
+  font-weight: 700; border-top: 2px solid var(--vh-primary);
+}
+.vh-table .vh-num {
+  text-align: right; font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+/* ---- generic surface ------------------------------------------------*/
+.vh-card {
+  background: #fff; border: 1px solid var(--vh-border); border-radius: 10px;
+  padding: 16px 18px; box-shadow: var(--vh-shadow-sm);
+}
+.vh-section-title {
+  font-size: 14px; font-weight: 700;
+  color: var(--vh-ink); margin: 0 0 12px;
+  border-bottom: 2px solid var(--vh-primary); padding-bottom: 6px;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+
+/* ---- empty state ----------------------------------------------------*/
+.vh-empty {
+  text-align: center; padding: 40px 20px; color: var(--vh-muted);
+  background: var(--vh-row-alt); border-radius: 8px;
+  border: 1px dashed var(--vh-border);
+}
+
+/* ---- toolbar --------------------------------------------------------*/
+.vh-toolbar {
+  display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+  background: #fff; padding: 12px 16px; border-radius: 8px;
+  margin-bottom: 18px; border: 1px solid var(--vh-border);
+  box-shadow: var(--vh-shadow-sm);
+}
+.vh-toolbar label {
+  font-size: 12px; color: var(--vh-muted); font-weight: 600;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.vh-toolbar input, .vh-toolbar select {
+  padding: 6px 10px; border: 1px solid var(--vh-border); border-radius: 6px;
+  font-size: 13px; background: #fff; color: var(--vh-ink);
+}
+.vh-toolbar input:focus, .vh-toolbar select:focus {
+  outline: 2px solid var(--vh-accent-light); outline-offset: 0;
+  border-color: var(--vh-primary);
+}
+
+/* ---- Sidebar layer ------------------------------------------------*/
+/* Replaces Unfold's `z-50` wrapper class on the nav sidebar. The custom
+   sticky header below sits at z-index 60; a z-50 wrapper would create a
+   stacking context capped at 50, painting the collapsed-sidebar re-open
+   toggle BEHIND the header (no way to re-open the menu on desktop). Pin
+   the whole sidebar layer above the header so the toggle stays clickable. */
+.vh-sidebar-layer {
+  z-index: 70;
+}
+
+/* ---- Sticky header wrapper (ticker + welcome bar move together) ----*/
+.vh-sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: #fff;
+  margin-bottom: 24px;        /* replaces Unfold's mb-6 on inner bar */
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+.vh-sticky-header .vh-header-bar {
+  background: #fff;
+  /* Original Unfold mb-6 removed — margin lives on the sticky wrapper. */
+}
+
+/* ---- Live gold-rate ticker (sits inside .vh-sticky-header) ---------*/
+.vh-rate-ticker {
+  background: linear-gradient(90deg, var(--vh-primary) 0%,
+              var(--vh-primary-dark) 100%);
+  color: #fff;
+  overflow: hidden;
+  border-bottom: 1px solid var(--vh-accent);
+  padding: 6px 0;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  user-select: none;
+}
+.vh-rate-ticker[data-stale] {
+  background: linear-gradient(90deg, #6b7280 0%, #4b5563 100%);
+}
+.vh-rate-ticker-track {
+  display: inline-flex;
+  animation: vh-marquee 45s linear infinite;
+  will-change: transform;
+}
+.vh-rate-ticker:hover .vh-rate-ticker-track {
+  animation-play-state: paused;
+}
+.vh-rate-ticker-content {
+  display: inline-flex; gap: 28px; align-items: center;
+  padding-right: 28px; flex-shrink: 0;
+}
+.vh-rate-label {
+  background: rgba(0,0,0,.22); color: var(--vh-accent-light);
+  padding: 3px 12px 3px 8px; border-radius: 999px;
+  font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; font-size: 10.5px;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.vh-rate-label .material-symbols-outlined { font-size: 14px; }
+.vh-rate-item { display: inline-flex; gap: 4px; align-items: baseline; }
+.vh-rate-item b {
+  color: var(--vh-accent-light); font-weight: 700;
+  letter-spacing: .04em; font-size: 11px;
+}
+.vh-rate-sub { color: rgba(255,255,255,.7); font-size: 11px; }
+.vh-rate-source {
+  color: rgba(255,255,255,.55); font-size: 10px;
+  letter-spacing: .03em; padding-left: 8px;
+  border-left: 1px solid rgba(255,255,255,.2);
+}
+@keyframes vh-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vh-rate-ticker-track { animation: none; }
+}
+
+/* ---- V monogram inline logo (WHITE bg, ORANGE V — like the card) ---*/
+.vh-mark {
+  display: inline-flex; align-items: center; gap: 10px;
+  color: var(--vh-primary);
+}
+.vh-mark .vh-mark-circle {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: #fff; color: var(--vh-primary);
+  border: 2px solid var(--vh-primary);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: Georgia, serif;
+  font-weight: 700; font-size: 18px;
+}
+.vh-mark .vh-mark-text {
+  display: flex; flex-direction: column; line-height: 1;
+}
+.vh-mark .vh-mark-text strong {
+  font-size: 18px; font-weight: 600; letter-spacing: .01em;
+}
+.vh-mark .vh-mark-text small {
+  font-size: 9.5px; font-weight: 600; color: var(--vh-muted);
+  text-transform: uppercase; letter-spacing: .25em; margin-top: 2px;
+}
+
+/* ---- LIGHT hero (used on detail pages) -----------------------------*/
+.vh-hero-light {
+  background: #fff;
+  border: 1px solid var(--vh-border);
+  border-left: 4px solid var(--vh-primary);
+  border-radius: 10px;
+  padding: 22px 28px;
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  box-shadow: var(--vh-shadow-sm);
+  position: relative;
+}
+.vh-hero-light h1 {
+  font-size: 22px;
+  color: var(--vh-ink);
+  margin: 0 0 4px;
+  font-weight: 700;
+}
+.vh-hero-light h1 a { color: var(--vh-primary); text-decoration: none; }
+.vh-hero-light h1 a:hover { color: var(--vh-primary-dark); }
+.vh-hero-light .meta { color: var(--vh-muted); font-size: 13px; line-height: 1.6; }
+.vh-hero-light .meta strong { color: var(--vh-ink); font-weight: 600; }
+.vh-hero-light .avatar {
+  width: 76px; height: 76px; border-radius: 50%;
+  background: #fff; color: var(--vh-primary);
+  display: flex; align-items: center; justify-content: center;
+  font-family: Georgia, serif;
+  font-size: 32px; font-weight: 700;
+  flex-shrink: 0;
+  border: 2px solid var(--vh-primary);
+  box-shadow: 0 4px 10px rgba(0,0,0,.06);
+  overflow: hidden;
+}
+.vh-hero-light .avatar img { width: 100%; height: 100%; object-fit: cover; }
+.vh-hero-light .id-block {
+  background: #fff;
+  border: 1.5px solid var(--vh-primary);
+  padding: 12px 18px; border-radius: 8px;
+  min-width: 140px; text-align: center;
+}
+.vh-hero-light .id-block .small {
+  font-size: 9.5px; color: var(--vh-muted);
+  letter-spacing: .25em; text-transform: uppercase; font-weight: 700;
+}
+.vh-hero-light .id-block .big {
+  font-size: 22px; color: var(--vh-primary);
+  font-weight: 700; line-height: 1.1; margin-top: 3px;
+  font-variant-numeric: tabular-nums;
+}
+.vh-hero-light .actions { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---- tabs (lighter active state) -----------------------------------*/
+.vh-tabs {
+  display: flex; gap: 2px; border-bottom: 2px solid var(--vh-border);
+  margin-bottom: 14px; flex-wrap: wrap; background: transparent;
+}
+.vh-tab {
+  padding: 10px 16px; cursor: pointer; font-size: 13px;
+  font-weight: 600; color: var(--vh-muted);
+  border-radius: 6px 6px 0 0; background: transparent;
+  border: 0; font-family: inherit;
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+  transition: color .12s ease, border-color .12s ease;
+}
+.vh-tab.active {
+  background: transparent; color: var(--vh-primary);
+  border-bottom-color: var(--vh-primary);
+}
+.vh-tab:hover:not(.active) {
+  color: var(--vh-ink);
+  border-bottom-color: var(--vh-border);
+}
+.vh-tab-panel { display: none; }
+.vh-tab-panel.active { display: block; }
+
+/* ---- action sidebar card -------------------------------------------*/
+.vh-action-card {
+  background: #fff;
+  border: 1px solid var(--vh-border);
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: var(--vh-shadow-sm);
+  margin-bottom: 14px;
+}
+.vh-action-card h3 {
+  font-size: 11px;
+  color: var(--vh-muted); margin: 0 0 10px;
+  text-transform: uppercase; letter-spacing: .07em; font-weight: 700;
+  border-bottom: 1px solid var(--vh-border); padding-bottom: 6px;
+}
+.vh-action-card .stack { display: flex; flex-direction: column; gap: 6px; }
+.vh-action-card .stack > a { width: 100%; justify-content: center; }
+.vh-info-row {
+  display: grid; grid-template-columns: 120px 1fr;
+  gap: 8px; font-size: 12.5px; padding: 4px 0;
+}
+.vh-info-row .k { color: var(--vh-muted); font-weight: 600; }
+.vh-info-row .v {
+  color: var(--vh-ink); font-variant-numeric: tabular-nums;
+}
+.vh-info-row .v a { color: var(--vh-primary); text-decoration: none; font-weight: 600; }
+
+/* ---- timeline ------------------------------------------------------*/
+.vh-timeline { list-style: none; padding: 0; margin: 0; }
+.vh-timeline li {
+  display: flex; gap: 12px; padding: 10px 0;
+  border-bottom: 1px solid var(--vh-border); align-items: flex-start;
+}
+.vh-timeline .ic {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--vh-primary-soft); color: var(--vh-primary);
+  border: 1px solid var(--vh-primary);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.vh-timeline .ic .material-symbols-outlined { font-size: 17px; }
+.vh-timeline .ev-title { font-weight: 600; color: var(--vh-ink); font-size: 13px; }
+.vh-timeline .ev-desc  { font-size: 12px; color: var(--vh-muted); margin-top: 2px; }
+.vh-timeline .ev-when  { font-size: 11px; color: var(--vh-muted); margin-top: 3px; }
+
+/* ---- breadcrumb ----------------------------------------------------*/
+.vh-crumb {
+  font-size: 12px; color: var(--vh-muted); margin-bottom: 10px;
+}
+.vh-crumb a { color: var(--vh-primary); text-decoration: none; font-weight: 500; }
+.vh-crumb a:hover { text-decoration: underline; }
+
+/* ---- balance card --------------------------------------------------*/
+.vh-balance-card {
+  background: #fff; border: 1px solid var(--vh-border); border-radius: 10px;
+  padding: 18px 22px; margin-bottom: 18px; box-shadow: var(--vh-shadow-sm);
+}
+.vh-balance-table { width: 100%; border-collapse: collapse; }
+.vh-balance-table td { padding: 7px 4px; font-size: 13px; }
+.vh-balance-table td.k { color: var(--vh-muted); }
+.vh-balance-table td.v {
+  text-align: right; font-variant-numeric: tabular-nums;
+  color: var(--vh-ink); font-weight: 600;
+}
+.vh-balance-table tr.highlight td {
+  background: var(--vh-highlight); font-weight: 700; padding: 10px 8px;
+  border-top: 1px solid var(--vh-primary); border-bottom: 1px solid var(--vh-primary);
+}
+.vh-balance-table tr.danger td {
+  background: #FEF2F2; color: #991B1B; font-weight: 700; padding: 10px 8px;
+}
+.vh-balance-table tr.success-row td {
+  background: #F0FDF4; color: #166534; font-weight: 700; padding: 10px 8px;
+}
+.vh-balance-table tr.divider td { padding: 4px 0; border-top: 1px dashed var(--vh-border); }
+
+/* ---- detail page wrapper -------------------------------------------*/
+.vh-detail { max-width: 1280px; margin: 16px auto; padding: 0 20px; }
+.vh-layout {
+  display: grid; grid-template-columns: 1fr 320px;
+  gap: 20px; align-items: flex-start;
+}
+@media (max-width: 980px) { .vh-layout { grid-template-columns: 1fr; } }
+
+/* ---- Unfold sidebar logo: white box with orange icon ---------------*/
+/* Unfold renders SITE_SYMBOL inside a primary-colored rounded box.
+   Override to a white box with thin orange border and orange icon. */
+#site-name a span.material-symbols-outlined,
+.sidebar .material-symbols-outlined[class*="bg-primary"],
+.sidebar a span.material-symbols-outlined.bg-primary-600,
+header .material-symbols-outlined.bg-primary-600 {
+  background: #fff !important;
+  color: var(--vh-primary) !important;
+  border: 1.5px solid var(--vh-primary) !important;
+  border-radius: 6px !important;
+}
+/* The brand wrapper in the sidebar header */
+.sidebar header,
+nav[id="nav-sidebar"] header {
+  background: #fff !important;
+}

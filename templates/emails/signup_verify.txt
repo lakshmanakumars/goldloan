@@ -1,0 +1,18 @@
+Namaste {{ owner_name }},
+
+You requested a new back-office for "{{ business_name }}" on Vaarahi
+Gold Finance.
+
+Click the link below within 24 hours to confirm your email and finish
+setting up your portal:
+
+  {{ verify_url }}
+
+Your portal URL will be:
+  http://{{ slug }}.{{ tenant_base_domain }}:8765/admin/
+
+If you didn't request this, just ignore this email — nothing happens
+until you click the link.
+
+— Vaarahi Gold Finance
+{{ site_base_url }}

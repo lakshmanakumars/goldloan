@@ -1,0 +1,38 @@
+{% extends "admin/change_form.html" %}
+
+{# Expose the tenant's gold rates + max-LTV to the page so the inline JS
+   (admin/loans/loan_ltv_live.js, loaded via LoanAdmin.Media) can recompute
+   eligibility from unsaved gold-item rows. #}
+{% block form_top %}{{ block.super }}
+    {{ ltv_data|json_script:"ltv-rates" }}
+{% endblock %}
+
+{# Override field_sets so the GoldItem inline renders immediately after the
+   "Borrower" fieldset, instead of below all fieldsets. The first inline in
+   LoanAdmin.inlines (GoldItemInline) is moved up; the rest (RepaymentInline)
+   stay in their default position via the inline_field_sets block below. #}
+{% block field_sets %}
+    {% for fieldset in adminform %}
+        {% if "tab" not in fieldset.classes %}
+            {% include 'admin/includes/fieldset.html' %}
+        {% endif %}
+
+        {% if fieldset.name == "Borrower" %}
+            {% for inline_admin_formset in inline_admin_formsets %}
+                {% if forloop.first %}
+                    {% include inline_admin_formset.opts.template %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
+
+    {% include "unfold/helpers/fieldsets_tabs.html" %}
+{% endblock %}
+
+{% block inline_field_sets %}
+    {% for inline_admin_formset in inline_admin_formsets %}
+        {% if not forloop.first %}
+            {% include inline_admin_formset.opts.template %}
+        {% endif %}
+    {% endfor %}
+{% endblock %}

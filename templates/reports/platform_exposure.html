@@ -1,0 +1,36 @@
+{% extends "reports/base.html" %}
+{% block report %}
+<h1>Platform-wide Exposure</h1>
+<div class="sub">Aggregate across every broker on the platform</div>
+
+<div class="cards">
+  <div class="card">
+    <div class="label">Platform networth (loan-book)</div>
+    <div class="value">₹{{ k.loanbook_networth|floatformat:2 }}</div>
+  </div>
+  <div class="card">
+    <div class="label">Outstanding principal</div>
+    <div class="value">₹{{ k.outstanding_principal|floatformat:2 }}</div>
+  </div>
+  <div class="card">
+    <div class="label">Lifetime disbursed</div>
+    <div class="value">₹{{ k.lifetime_disbursed|floatformat:2 }}</div>
+  </div>
+  <div class="card">
+    <div class="label">Lifetime interest earned</div>
+    <div class="value">₹{{ k.lifetime_received_interest|floatformat:2 }}</div>
+  </div>
+  <div class="card">
+    <div class="label">Active loans</div>
+    <div class="value">{{ k.active_loans }}</div>
+  </div>
+  <div class="card">
+    <div class="label">Overdue loans</div>
+    <div class="value">{{ k.overdue_loans }}</div>
+  </div>
+  <div class="card">
+    <div class="label">This month interest</div>
+    <div class="value">₹{{ k.interest_this_month|floatformat:2 }}</div>
+  </div>
+</div>
+{% endblock %}

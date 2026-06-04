@@ -1,0 +1,26 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'vaarahi/vaarahi.css' %}">{% endblock %}
+{% block content %}
+<div class="vh-detail" style="max-width:640px">
+  <div class="vh-crumb">
+    <a href="/admin/">Dashboard</a> › <a href="{% url 'auctions:detail' auction.pk %}">Auction {{ auction.loan.loan_no }}</a> › Post settlement
+  </div>
+  <div class="vh-card">
+    <h1 style="margin:0 0 8px;color:#c46616;font-size:20px">Post settlement</h1>
+    <p>This will:</p>
+    <ul style="font-size:13px">
+      <li>Mark loan <strong>{{ auction.loan.loan_no }}</strong> as <strong>AUCTIONED</strong></li>
+      {% if auction.surplus_amount.amount > 0 %}
+      <li>Post a cash drawal of <strong>₹{{ auction.surplus_amount.amount|floatformat:2 }}</strong> in the Cash Book (surplus refunded to borrower)</li>
+      {% endif %}
+      <li>Move auction status to <strong>POSTED</strong> (terminal)</li>
+    </ul>
+    <form method="post" style="margin-top:14px;display:flex;gap:8px">{% csrf_token %}
+      <button type="submit" class="vh-btn vh-btn-primary">
+        <span class="material-symbols-outlined">check_circle</span>Post settlement</button>
+      <a href="{% url 'auctions:detail' auction.pk %}" class="vh-btn vh-btn-ghost">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

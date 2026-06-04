@@ -1,0 +1,57 @@
+{% extends "reports/base.html" %}
+{% load i18n %}
+{% block report %}
+<h1>{% trans "Daily Cash Book" %}</h1>
+<div class="sub">{{ on_date|date:"l, d M Y" }}</div>
+
+<form class="toolbar" method="get">
+  <label>{% trans "Date" %} <input type="date" name="date" value="{{ on_date|date:'Y-m-d' }}"></label>
+  <button class="btn btn-primary" type="submit">{% trans "Apply" %}</button>
+  <a class="btn btn-outline"
+     href="?date={{ on_date|date:'Y-m-d' }}&format=xlsx">{% trans "Download Excel" %}</a>
+</form>
+
+<div class="cards">
+  <div class="card"><div class="label">{% trans "Total OUT (disbursed)" %}</div>
+    <div class="value">₹{{ data.total_out|floatformat:2 }}</div></div>
+  <div class="card"><div class="label">{% trans "Total IN (received)" %}</div>
+    <div class="value">₹{{ data.total_in|floatformat:2 }}</div></div>
+  <div class="card"><div class="label">{% trans "Net flow" %}</div>
+    <div class="value">₹{{ data.net|floatformat:2 }}</div>
+    <div class="foot">{% trans "Positive = cash gained today" %}</div></div>
+</div>
+
+{% if data.rows %}
+<table>
+  <thead><tr>
+    <th>{% trans "Time" %}</th><th>{% trans "Type" %}</th><th>{% trans "Ref" %}</th>
+    <th>{% trans "Party" %}</th><th>{% trans "Note" %}</th>
+    <th class="num">{% trans "Out" %}</th>
+    <th class="num">{% trans "In" %}</th>
+    <th class="num">{% trans "Running" %}</th>
+  </tr></thead>
+  <tbody>
+    {% for r in data.rows %}
+    <tr>
+      <td>{{ r.when }}</td>
+      <td><span class="pill {% if r.kind == 'OUT' %}pill-overdue{% else %}pill-active{% endif %}">{{ r.kind }}</span></td>
+      <td>{{ r.ref }}</td>
+      <td>{{ r.party }}</td>
+      <td>{{ r.note }}</td>
+      <td class="num out">{% if r.amount_out %}₹{{ r.amount_out|floatformat:2 }}{% endif %}</td>
+      <td class="num in">{% if r.amount_in %}₹{{ r.amount_in|floatformat:2 }}{% endif %}</td>
+      <td class="num">₹{{ r.running|floatformat:2 }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot><tr>
+    <td colspan="5">{% trans "Totals" %}</td>
+    <td class="num out">₹{{ data.total_out|floatformat:2 }}</td>
+    <td class="num in">₹{{ data.total_in|floatformat:2 }}</td>
+    <td class="num">₹{{ data.net|floatformat:2 }}</td>
+  </tr></tfoot>
+</table>
+{% else %}
+<div class="empty">{% trans "No cash movements on this date." %}</div>
+{% endif %}
+{% endblock %}

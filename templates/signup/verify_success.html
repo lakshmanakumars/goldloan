@@ -1,0 +1,34 @@
+{% extends "signup/_base.html" %}
+{% block content %}
+<div style="text-align:center;margin-bottom:18px">
+  <div style="display:inline-flex;width:56px;height:56px;border-radius:50%;
+              background:#dcfce7;color:#166534;align-items:center;
+              justify-content:center;font-size:28px">✓</div>
+</div>
+<h1 style="text-align:center">{{ tenant.name }} is ready! 🎉</h1>
+<p class="sub" style="text-align:center">
+  {% if already %}You already verified this signup.{% else %}Your back-office is activated and waiting.{% endif %}
+</p>
+
+<div style="background:#fff7ed;border:1.5px solid #c46616;border-radius:8px;
+            padding:18px 22px;text-align:center;margin:18px 0">
+  <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:6px">Your back-office</div>
+  <a href="{{ login_url }}" style="font-size:18px;font-weight:700;color:#c46616;text-decoration:none;font-family:ui-monospace,monospace">{{ login_url }}</a>
+</div>
+
+{% if not already %}
+<div style="background:#f0fdf4;border:1px solid #047857;border-radius:8px;
+            padding:14px 18px;font-size:13px;color:#166534">
+  📨 <strong>Your login password</strong> was emailed to <strong>{{ signup.owner_email }}</strong>.
+  Use it to sign in for the first time, then change it from your profile.
+</div>
+{% endif %}
+
+<div style="text-align:center;margin-top:22px">
+  <a href="{{ login_url }}" style="display:inline-block;background:#c46616;color:#fff;padding:12px 32px;border-radius:6px;text-decoration:none;font-weight:700">Open back-office →</a>
+</div>
+
+<p style="text-align:center;font-size:11px;color:#6b7280;margin-top:22px">
+  You're on a 14-day trial. We'll email you before it ends.
+</p>
+{% endblock %}

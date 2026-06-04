@@ -1,0 +1,30 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'vaarahi/vaarahi.css' %}">{% endblock %}
+{% block content %}
+<div class="vh-detail" style="max-width:640px">
+  <div class="vh-crumb">
+    <a href="/admin/">Dashboard</a> › <a href="{% url 'auctions:detail' auction.pk %}">Auction {{ auction.loan.loan_no }}</a> › Send Notice {{ notice_no }}
+  </div>
+  <div class="vh-card">
+    <h1 style="margin:0 0 8px;color:#c46616;font-size:20px">Send Notice {{ notice_no }} of 2</h1>
+    <p style="color:#6b7280;font-size:13px">
+      For loan <strong>{{ auction.loan.loan_no }}</strong> ·
+      borrower <strong>{{ auction.loan.customer.name }}</strong>.
+    </p>
+    <p>This will:</p>
+    <ul style="font-size:13px;color:#1f2937">
+      <li>Generate the official RBI 14-day notice PDF</li>
+      <li>Email it to the customer (if they have an email on file)</li>
+      <li>Log the notice in the audit trail</li>
+      <li>Move auction status to <strong>Notice {{ notice_no }} sent</strong></li>
+      {% if notice_no == 1 %}<li>Start the 14-day countdown to Notice 2</li>{% else %}<li>Start the 14-day countdown to scheduling the auction</li>{% endif %}
+    </ul>
+    <form method="post" style="margin-top:16px;display:flex;gap:8px">{% csrf_token %}
+      <button type="submit" class="vh-btn vh-btn-primary">
+        <span class="material-symbols-outlined">campaign</span>Send Notice {{ notice_no }}</button>
+      <a href="{% url 'auctions:detail' auction.pk %}" class="vh-btn vh-btn-ghost">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

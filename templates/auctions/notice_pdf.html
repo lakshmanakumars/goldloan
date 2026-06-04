@@ -1,0 +1,181 @@
+{% load i18n %}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Auction Notice {{ notice_no }} — {{ loan.loan_no }}</title>
+<style>
+  @page { size: A4; margin: 14mm; }
+  body { font-family: "Noto Sans", "Lohit Telugu", "Lohit Devanagari", sans-serif;
+         font-size: 10.5pt; color: #1f2937; line-height: 1.5; }
+  .frame { border: 2px solid {{ tenant.primary_color }}; border-radius: 6px;
+           padding: 5mm; position: relative; }
+  .head { border-bottom: 2.5px solid #f59e0b; padding-bottom: 8px;
+          margin-bottom: 12px; display: table; width: 100%; }
+  .head .brand { display: table-cell; vertical-align: bottom; }
+  .head .meta { display: table-cell; text-align: right; vertical-align: bottom; }
+  .vname { font-family: Georgia, serif; font-size: 18pt; color: {{ tenant.primary_color }};
+           font-weight: 600; }
+  .vsub { font-size: 9pt; color: #6b7280; letter-spacing: .3em;
+          text-transform: uppercase; margin-top: 2px; }
+  .small { font-size: 8.5pt; color: #6b7280; margin-top: 4px; }
+  .stamp { display: inline-block; padding: 6px 14px; border-radius: 4px;
+           background: #991B1B; color: #fff; letter-spacing: .15em;
+           text-transform: uppercase; font-size: 9.5pt; font-weight: 700; }
+  .ticket-no { font-family: Georgia, serif; font-size: 15pt;
+               color: {{ tenant.primary_color }}; font-weight: 700; margin-top: 6px; }
+  h1 { font-family: Georgia, serif; font-size: 13pt; color: {{ tenant.primary_color }};
+       margin: 0 0 6px; border-bottom: 1px solid #f59e0b; padding-bottom: 3px; }
+  table { width: 100%; border-collapse: collapse; }
+  table.kv td { padding: 4px 6px; border-bottom: 0.4pt solid #e5e7eb; }
+  table.kv td:first-child { color: #6b7280; width: 35%; }
+  table.kv td:nth-child(2) { font-weight: 600; color: #1f2937; }
+  th { background: {{ tenant.primary_color }}; color: #fff; padding: 6px 8px;
+       font-size: 9pt; text-align: left; }
+  td { padding: 6px 8px; border-bottom: 0.4pt solid #e5e7eb; font-size: 10pt; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .dues-box {
+    background: {{ tenant.primary_soft }}; border: 1.5px solid {{ tenant.primary_color }}; border-radius: 4px;
+    padding: 10px 14px; margin: 10px 0; display: table; width: 100%;
+    font-weight: 700; color: {{ tenant.primary_color }};
+  }
+  .dues-box .l { display: table-cell; }
+  .dues-box .r { display: table-cell; text-align: right; font-size: 14pt;
+                 font-variant-numeric: tabular-nums; }
+  .bilingual { display: table; width: 100%; border-spacing: 5px; margin-top: 6px; }
+  .bilingual .col { display: table-cell; vertical-align: top; width: 50%;
+                    background: #fff; padding: 8px 10px;
+                    border: 1px solid #e5e7eb; border-radius: 4px;
+                    font-size: 9pt; }
+  .bilingual b { color: {{ tenant.primary_color }}; }
+  .sign { display: table; width: 100%; margin-top: 26px; }
+  .sign .slot { display: table-cell; width: 50%; padding: 0 32px;
+                border-top: 1px solid #1f2937; padding-top: 4px;
+                font-size: 9pt; text-align: center; color: #6b7280; }
+  .vlogo { display: inline-block; vertical-align: middle; margin-right: 6px;
+           width: 22px; height: 22px; border-radius: 50%;
+           background: #fff; color: {{ tenant.primary_color }}; border: 2px solid {{ tenant.primary_color }};
+           text-align: center; font-family: Georgia, serif;
+           font-size: 14pt; font-weight: 700; line-height: 18px; }
+  .vlogo-img { display: inline-block; vertical-align: middle;
+               margin-right: 6px; height: 28px; max-width: 90px; }
+</style>
+</head>
+<body>
+<div class="frame">
+
+<div class="head">
+  <div class="brand">
+    <div class="vname">{% if tenant.logo %}<img class="vlogo-img" src="{{ tenant.logo.path }}">{% else %}<span class="vlogo">{{ tenant.monogram }}</span> {% endif %}{{ tenant.name }}</div>
+    <div class="vsub">{{ tenant.tagline|default:"Gold Finance" }}</div>
+    <div class="small">
+      {% if tenant.address %}{{ tenant.address }}<br>{% endif %}
+      {% if tenant.license_no %}License {{ tenant.license_no }} · {% endif %}
+      ☎ {{ tenant.contact_phone }}
+    </div>
+  </div>
+  <div class="meta">
+    <div class="stamp">Auction Notice {{ notice_no }} of 2</div>
+    <div class="ticket-no">{{ loan.loan_no }}</div>
+    <div class="small">Issued: {{ today|date:"d M Y" }}</div>
+  </div>
+</div>
+
+<h1>{{ sub_title }}</h1>
+
+<p>
+  To: <strong>{{ customer.name }}</strong>
+  {% if customer.address_line1 %}<br>{{ customer.address_line1 }}{% if customer.address_line2 %}, {{ customer.address_line2 }}{% endif %}{% endif %}
+  {% if customer.city %}<br>{{ customer.city }}{% if customer.state %}, {{ customer.state }}{% endif %} {{ customer.pincode }}{% endif %}
+  {% if customer.phone %}<br>Phone: {{ customer.phone }}{% endif %}
+</p>
+
+<p>
+  This is a formal notice that you have defaulted on the gold loan account
+  detailed below. As per applicable Pawnbroker / NBFC regulations, you are
+  hereby given a period of <strong>{{ notice_text_days }} (fourteen) days</strong>
+  from the date of this notice to settle the outstanding dues, failing
+  which we shall proceed to {% if notice_no == 1 %}issue a second and final notice{% else %}auction the pledged gold ornaments in a public auction{% endif %}.
+</p>
+
+<h1>Loan account</h1>
+<table class="kv">
+  <tr><td>Loan number</td><td>{{ loan.loan_no }}</td></tr>
+  <tr><td>Date disbursed</td><td>{{ loan.start_date|date:"d M Y" }}</td></tr>
+  <tr><td>Maturity date</td><td><strong>{{ loan.maturity_date|date:"d M Y" }}</strong></td></tr>
+  <tr><td>Principal</td><td>₹ {{ loan.principal.amount|floatformat:2 }}</td></tr>
+  <tr><td>Interest rate</td><td>{{ loan.interest_rate_pct }}% {% if loan.rate_type == 'monthly' %}per month{% else %}per annum{% endif %}</td></tr>
+  <tr><td>Outstanding principal</td><td>₹ {{ loan.outstanding_principal.amount|floatformat:2 }}</td></tr>
+  <tr><td>Interest due as of today</td><td>₹ {{ loan.interest_due_now.amount|floatformat:2 }}</td></tr>
+</table>
+
+<div class="dues-box">
+  <span class="l">TOTAL DUES PAYABLE</span>
+  <span class="r">₹ {{ dues.amount|floatformat:2 }}</span>
+</div>
+
+<h1>Pledged items</h1>
+<table>
+  <thead><tr>
+    <th>#</th><th>Description</th>
+    <th class="num">Gross (g)</th><th class="num">Net (g)</th>
+    <th class="num">Purity (ct)</th>
+  </tr></thead>
+  <tbody>
+    {% for it in items %}
+    <tr>
+      <td>{{ forloop.counter }}</td>
+      <td>{{ it.description }}</td>
+      <td class="num">{{ it.gross_weight_g }}</td>
+      <td class="num"><b>{{ it.net_weight_g }}</b></td>
+      <td class="num">{{ it.purity_carat }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="bilingual">
+  <div class="col">
+    <b>What you must do (English)</b>
+    <ol>
+      <li>Visit our office within <b>{{ notice_text_days }} days</b> of this notice with this letter.</li>
+      <li>Pay the total dues of <b>₹ {{ dues.amount|floatformat:2 }}</b> by cash / UPI / bank transfer.</li>
+      <li>Collect your pledged ornaments after settlement.</li>
+      <li>Alternatively, contact us to discuss renewal or partial payment.</li>
+    </ol>
+  </div>
+  {% if secondary_lang == 'te' %}
+  <div class="col">
+    <b>మీరు చేయవలసినవి (తెలుగు)</b>
+    <ol>
+      <li>ఈ నోటీసు అందిన నుండి <b>{{ notice_text_days }} రోజుల</b> లోపు మా కార్యాలయానికి రండి.</li>
+      <li>మొత్తం బకాయి <b>₹ {{ dues.amount|floatformat:2 }}</b> నగదు / UPI / బ్యాంక్ ద్వారా చెల్లించండి.</li>
+      <li>చెల్లింపు తర్వాత మీ తాకట్టు వస్తువులను తీసుకువెళ్లండి.</li>
+      <li>లేదా రెన్యూవల్ / పాక్షిక చెల్లింపు గురించి మాతో సంప్రదించండి.</li>
+    </ol>
+  </div>
+  {% elif secondary_lang == 'hi' %}
+  <div class="col">
+    <b>आपको क्या करना है (हिंदी)</b>
+    <ol>
+      <li>इस नोटिस की तिथि से <b>{{ notice_text_days }} दिनों</b> के अंदर हमारे कार्यालय आएं।</li>
+      <li>कुल बकाया <b>₹ {{ dues.amount|floatformat:2 }}</b> नकद / UPI / बैंक के माध्यम से भुगतान करें।</li>
+      <li>भुगतान के बाद अपने गिरवी सामान वापस लें।</li>
+      <li>अन्यथा नवीनीकरण / आंशिक भुगतान के लिए हमसे संपर्क करें।</li>
+    </ol>
+  </div>
+  {% endif %}
+</div>
+
+<p style="margin-top:14px;font-size:9pt;color:#6b7280">
+  This is an official notice issued under the Pawnbroker / NBFC regulations.
+  Ignore this at your own risk. Auction proceeds — if any — will be applied
+  first to your outstanding dues; any surplus will be refunded to you.
+</p>
+
+<div class="sign">
+  <div class="slot">Borrower acknowledgement</div>
+  <div class="slot">For {{ tenant.name }}</div>
+</div>
+
+</div>
+</body></html>

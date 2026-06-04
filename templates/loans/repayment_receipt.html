@@ -1,0 +1,118 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Receipt {{ rp.receipt_no|default:rp.pk }}</title>
+<style>
+  @page { size: A5 portrait; margin: 10mm; }
+  body { font-family: "Noto Sans", "Lohit Telugu", "Lohit Devanagari", sans-serif;
+         font-size: 10pt; color: #7c2d12; background: #f9fafb; }
+
+  .frame { border: 1.5px solid #c46616; border-radius: 4px;
+           padding: 4mm; position: relative; }
+  .frame::before {
+    content: ""; position: absolute; inset: 2.5mm;
+    border: 0.5pt dashed #f59e0b; opacity: .5; border-radius: 3px;
+    pointer-events: none;
+  }
+
+  .head { border-bottom: 2.5px solid #f59e0b; padding-bottom: 7px; margin-bottom: 10px; }
+  .head .vname { font-family: Georgia, serif; font-size: 18pt;
+                 color: #c46616; font-weight: 600; line-height: 1; }
+  .head .vsub  { font-size: 8pt; color: #6b7280; letter-spacing: .3em;
+                 text-transform: uppercase; margin-top: 3px; }
+  .head .vmeta { font-size: 8pt; color: #6b7280; margin-top: 4px; }
+
+  .title { display: table; width: 100%; margin: 10px 0 6px; }
+  .title h1 { display: table-cell; margin: 0; font-family: Georgia, serif;
+              font-size: 13pt; color: #c46616; vertical-align: middle; }
+  .title .right { display: table-cell; text-align: right; vertical-align: middle; }
+  .title .right .lbl { font-size: 8pt; color: #f59e0b; font-weight: 700;
+                       letter-spacing: .25em; text-transform: uppercase; }
+  .title .right .num { font-size: 14pt; color: #c46616; font-weight: 700; }
+  .title .right .date { font-size: 8pt; color: #6b7280; }
+
+  table.kv { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+  table.kv td { padding: 4px 6px; border-bottom: 0.5pt solid #e5e7eb; }
+  table.kv td:first-child { color: #6b7280; width: 45%; }
+  table.kv td:nth-child(2) { font-weight: 600; text-align: right;
+                              color: #c46616;
+                              font-variant-numeric: tabular-nums; }
+
+  .total { background: #FEF3C7; border: 1px solid #f59e0b; border-radius: 5px;
+           padding: 9px 12px; display: table; width: 100%;
+           font-size: 12pt; font-weight: 700; margin: 10px 0; color: #c46616; }
+  .total .l { display: table-cell; }
+  .total .r { display: table-cell; text-align: right;
+              font-variant-numeric: tabular-nums; }
+
+  .thanks { font-size: 9pt; margin-top: 12px; color: #a24d11;
+            border-top: 0.6pt dashed #f59e0b; padding-top: 8px; }
+  .sign { margin-top: 24px; border-top: 1px solid #c46616;
+          padding-top: 4px; font-size: 8pt; text-align: right;
+          color: #6b7280; padding-right: 12mm; }
+
+  .vlogo { display: inline-block; vertical-align: middle; margin-right: 6px;
+           width: 20px; height: 20px; border-radius: 50%;
+           background: #f59e0b; color: #c46616;
+           text-align: center; font-family: Georgia, serif;
+           font-size: 13pt; font-weight: 700; line-height: 20px; }
+</style>
+</head>
+<body>
+
+<div class="frame">
+
+<div class="head">
+  <div class="vname"><span class="vlogo">V</span> {{ tenant.name }}</div>
+  <div class="vsub">Gold Finance · <i>Your gold, our trust</i></div>
+  <div class="vmeta">
+    {% if tenant.license_no %}License {{ tenant.license_no }} · {% endif %}
+    ☎ {{ tenant.contact_phone }}
+  </div>
+</div>
+
+<div class="title">
+  <h1>Payment Receipt</h1>
+  <div class="right">
+    <div class="lbl">Receipt</div>
+    <div class="num">{{ rp.receipt_no|default:rp.pk }}</div>
+    <div class="date">{{ rp.paid_at|date:"d M Y, H:i" }}</div>
+  </div>
+</div>
+
+<table class="kv">
+  <tr><td>Received from</td><td>{{ customer.name }}</td></tr>
+  <tr><td>Phone</td><td>{{ customer.phone }}</td></tr>
+  <tr><td>Loan #</td><td>{{ loan.loan_no }}</td></tr>
+  <tr><td>Mode</td><td>{{ rp.get_mode_display }}{% if rp.reference %} ({{ rp.reference }}){% endif %}</td></tr>
+  <tr><td>Principal paid</td><td>₹ {{ rp.principal_paid.amount|floatformat:2 }}</td></tr>
+  <tr><td>Interest paid</td><td>₹ {{ rp.interest_paid.amount|floatformat:2 }}</td></tr>
+</table>
+
+<div class="total">
+  <span class="l">TOTAL RECEIVED</span>
+  <span class="r">₹ {{ rp.principal_paid.amount|add:rp.interest_paid.amount|floatformat:2 }}</span>
+</div>
+
+<table class="kv">
+  <tr><td>Original principal</td><td>₹ {{ loan.principal.amount|floatformat:2 }}</td></tr>
+  <tr style="background:#fafafa"><td><b>Outstanding after this payment</b></td>
+      <td><b>₹ {{ outstanding_after|floatformat:2 }}</b></td></tr>
+</table>
+
+<div class="thanks">
+  <b>Thank you.</b> Please keep this receipt safe for your records.
+  {% if secondary_lang == 'te' %}<br><br>
+    <b>ధన్యవాదాలు.</b> మీ రికార్డ్‌ల కోసం దయచేసి ఈ రశీదును భద్రంగా ఉంచండి.
+  {% elif secondary_lang == 'hi' %}<br><br>
+    <b>धन्यवाद।</b> कृपया अपने रिकॉर्ड के लिए यह रसीद सुरक्षित रखें।
+  {% endif %}
+</div>
+
+<div class="sign">For {{ tenant.name }}</div>
+
+</div>
+</body>
+</html>

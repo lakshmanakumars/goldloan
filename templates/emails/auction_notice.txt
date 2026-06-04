@@ -1,0 +1,20 @@
+AUCTION NOTICE {{ notice_no }} of 2 — {{ tenant.name }}
+
+To: {{ customer.name }}
+Loan #: {{ loan.loan_no }}
+
+Your gold loan account has crossed the due date and is now eligible for
+auction under applicable Pawnbroker / NBFC regulations.
+
+Outstanding principal : Rs. {{ loan.outstanding_principal.amount }}
+Interest due now      : Rs. {{ loan.interest_due_now.amount }}
+TOTAL DUES PAYABLE    : Rs. {{ dues.amount }}
+
+Please pay the total dues within 14 (fourteen) days to avoid auction
+of your pledged ornaments.
+
+A formal notice is attached as a PDF for your records.
+
+— {{ tenant.name }}
+{{ tenant.contact_phone }}
+{{ site_base_url }}

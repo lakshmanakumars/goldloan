@@ -1,0 +1,89 @@
+{% extends "reports/base.html" %}
+{% load i18n %}
+{% block report %}
+<h1>{% trans "Networth" %}</h1>
+<div class="sub">
+  {% if nw.cash_book_available %}
+    {% trans "Complete networth: loan book + cash on hand + accrued interest − capital owed − expenses." %}
+  {% else %}
+    {% trans "Partial networth: no Cash Book entries yet, so cash on hand is treated as 0. Record an opening balance via Day Close to make this complete." %}
+  {% endif %}
+</div>
+
+<div class="cards">
+  <div class="card" style="background:#fff7ed;border:1.5px solid #c46616">
+    <div class="label" style="color:#c46616">{% trans "Total Networth" %}</div>
+    <div class="value" style="font-size:28px">₹{{ nw.total_networth|floatformat:2 }}</div>
+    <div class="foot">{% trans "All assets − all liabilities" %}</div>
+  </div>
+  <div class="card">
+    <div class="label">{% trans "Loan book outstanding" %}</div>
+    <div class="value">₹{{ nw.loan_book_outstanding|floatformat:2 }}</div>
+    <div class="foot">{% trans "Money out with customers" %}</div>
+  </div>
+  <div class="card">
+    <div class="label">{% trans "Cash on hand" %}</div>
+    <div class="value">₹{{ nw.cash_on_hand|floatformat:2 }}</div>
+    <div class="foot">{% trans "Latest day-close per branch" %}</div>
+  </div>
+  <div class="card">
+    <div class="label">{% trans "Accrued interest" %}</div>
+    <div class="value">₹{{ nw.accrued_unpaid_interest|floatformat:2 }}</div>
+    <div class="foot">{% trans "Earned but not yet collected" %}</div>
+  </div>
+  <div class="card">
+    <div class="label">{% trans "Lifetime interest earned" %}</div>
+    <div class="value">₹{{ nw.lifetime_interest_earned|floatformat:2 }}</div>
+    <div class="foot">{% trans "Cumulative profit booked" %}</div>
+  </div>
+  <div class="card">
+    <div class="label">{% trans "Capital injected (owner)" %}</div>
+    <div class="value" style="color:#991B1B">− ₹{{ nw.capital_injected|floatformat:2 }}</div>
+    <div class="foot">{% trans "Liability to the owner" %}</div>
+  </div>
+  <div class="card">
+    <div class="label">{% trans "Owner drawals" %}</div>
+    <div class="value" style="color:#991B1B">− ₹{{ nw.owner_drawals|floatformat:2 }}</div>
+    <div class="foot">{% trans "Money returned to owner" %}</div>
+  </div>
+  <div class="card">
+    <div class="label">{% trans "Operating expenses" %}</div>
+    <div class="value" style="color:#991B1B">− ₹{{ nw.expenses|floatformat:2 }}</div>
+    <div class="foot">{% trans "Rent, salaries, utilities, etc." %}</div>
+  </div>
+</div>
+
+<h2 class="vh-section-title">{% trans "Formula" %}</h2>
+<table>
+  <tbody>
+    <tr><td>{% trans "Loan book outstanding" %}</td>
+        <td class="num">+ ₹{{ nw.loan_book_outstanding|floatformat:2 }}</td></tr>
+    <tr><td>{% trans "Cash on hand" %}</td>
+        <td class="num">+ ₹{{ nw.cash_on_hand|floatformat:2 }}</td></tr>
+    <tr><td>{% trans "Accrued unpaid interest" %}</td>
+        <td class="num">+ ₹{{ nw.accrued_unpaid_interest|floatformat:2 }}</td></tr>
+    <tr><td>{% trans "Lifetime interest earned" %}</td>
+        <td class="num">+ ₹{{ nw.lifetime_interest_earned|floatformat:2 }}</td></tr>
+    <tr><td>{% trans "Capital injected (owner loan to business)" %}</td>
+        <td class="num" style="color:#991B1B">− ₹{{ nw.capital_injected|floatformat:2 }}</td></tr>
+    <tr><td>{% trans "Owner drawals" %}</td>
+        <td class="num" style="color:#991B1B">− ₹{{ nw.owner_drawals|floatformat:2 }}</td></tr>
+    <tr><td>{% trans "Operating expenses" %}</td>
+        <td class="num" style="color:#991B1B">− ₹{{ nw.expenses|floatformat:2 }}</td></tr>
+  </tbody>
+  <tfoot>
+    <tr><td><b>{% trans "Total Networth" %}</b></td>
+        <td class="num"><b>₹{{ nw.total_networth|floatformat:2 }}</b></td></tr>
+  </tfoot>
+</table>
+
+<h2 class="vh-section-title" style="margin-top:24px">{% trans "Loan portfolio breakdown" %}</h2>
+<table>
+  <thead><tr><th>{% trans "Status" %}</th><th class="num">{% trans "Count" %}</th></tr></thead>
+  <tbody>
+    <tr><td>{% trans "Active" %}</td><td class="num">{{ k.active_loans }}</td></tr>
+    <tr><td>{% trans "Overdue" %}</td><td class="num">{{ k.overdue_loans }}</td></tr>
+    <tr><td>{% trans "Closed" %}</td><td class="num">{{ k.closed_loans }}</td></tr>
+  </tbody>
+</table>
+{% endblock %}

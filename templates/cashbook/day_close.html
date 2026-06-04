@@ -1,0 +1,151 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}{{ block.super }}
+<link rel="stylesheet" href="{% static 'vaarahi/vaarahi.css' %}">
+<style>
+  .denom-table { width: 100%; max-width: 480px; border-collapse: collapse; }
+  .denom-table td { padding: 8px; border-bottom: 1px solid #e5e7eb; }
+  .denom-table td:first-child { font-weight: 600; color: #c46616; width: 80px;
+        text-align: right; font-variant-numeric: tabular-nums; }
+  .denom-table input { width: 90px; padding: 6px 8px;
+        border: 1px solid #e5e7eb; border-radius: 4px;
+        font-variant-numeric: tabular-nums; }
+  .denom-table td.subtotal { text-align: right; color: #6b7280;
+        font-variant-numeric: tabular-nums; font-size: 12px; }
+  #denom-total {
+    background: #fff7ed; padding: 12px 16px; border-radius: 8px;
+    border: 1px solid #c46616; margin-top: 12px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-weight: 700; color: #c46616; font-size: 16px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="vh-detail" style="max-width:900px">
+
+  <div class="vh-crumb">
+    <a href="/admin/">{% trans "Dashboard" %}</a> ›
+    <a href="{% url 'admin:cashbook_dayclose_changelist' %}">{% trans "Day Closes" %}</a> ›
+    <span>{{ today|date:"d M Y" }}</span>
+  </div>
+
+  <div class="vh-hero-light">
+    <div class="id-block">
+      <div class="small">{% trans "Closing" %}</div>
+      <div class="big">{{ today|date:"d M" }}</div>
+    </div>
+    <div>
+      <h1>{% trans "Day Close" %} &middot; {{ branch.code }}</h1>
+      <div class="meta">
+        {% blocktrans with d=today|date:"l, d M Y" %}Closing for {{ d }}{% endblocktrans %}
+        &middot; {{ branch.name }}
+      </div>
+    </div>
+  </div>
+
+  <div class="vh-layout">
+    <div>
+      <div class="vh-card">
+        <h3 class="vh-section-title">{% trans "Counted cash by denomination" %}</h3>
+        <form method="post" id="close-form">{% csrf_token %}
+          <input type="hidden" name="branch" value="{{ branch.pk }}">
+          <table class="denom-table">
+            <thead><tr>
+              <th>{% trans "Denom" %}</th>
+              <th>{% trans "Count" %}</th>
+              <th>{% trans "Subtotal" %}</th>
+            </tr></thead>
+            <tbody>
+              {% for d in denoms %}
+              <tr>
+                <td>₹{{ d }}</td>
+                <td><input type="number" min="0" name="d_{{ d }}" value=""
+                           data-denom="{{ d }}" class="denom-input"></td>
+                <td class="subtotal" id="sub_{{ d }}">₹0.00</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          <div id="denom-total">
+            <span>{% trans "Physical count" %}</span>
+            <span id="denom-total-value">₹0.00</span>
+          </div>
+
+          <div style="margin-top:14px">
+            <label style="display:block;font-size:11px;color:#6b7280;
+                          text-transform:uppercase;letter-spacing:.05em;
+                          font-weight:700;margin-bottom:4px">
+              {% trans "Or enter total directly (skips denomination)" %}
+            </label>
+            <input type="number" step="0.01" name="physical_override"
+                   placeholder="0.00"
+                   style="width:200px;padding:8px 10px;border:1px solid #e5e7eb;
+                          border-radius:6px;font-variant-numeric:tabular-nums">
+          </div>
+
+          <div style="margin-top:14px">
+            <label style="display:block;font-size:11px;color:#6b7280;
+                          text-transform:uppercase;letter-spacing:.05em;
+                          font-weight:700;margin-bottom:4px">
+              {% trans "Notes" %}
+            </label>
+            <textarea name="notes" rows="2"
+                      style="width:100%;padding:8px 10px;border:1px solid #e5e7eb;
+                             border-radius:6px;font-family:inherit"></textarea>
+          </div>
+
+          <div style="margin-top:18px;display:flex;gap:8px">
+            <button type="submit" class="vh-btn vh-btn-primary">
+              <span class="material-symbols-outlined">lock</span>{% trans "Close the day" %}
+            </button>
+            <a href="{% url 'cashbook:detail' %}" class="vh-btn vh-btn-ghost">{% trans "Cancel" %}</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <aside>
+      <div class="vh-action-card">
+        <h3>{% trans "System balance" %}</h3>
+        <div class="vh-info-row"><div class="k">{% trans "Opening" %}</div>
+          <div class="v">₹{{ pos.opening|floatformat:2 }}</div></div>
+        <div class="vh-info-row"><div class="k">{% trans "In today" %}</div>
+          <div class="v" style="color:#166534">+ ₹{{ pos.inflow|floatformat:2 }}</div></div>
+        <div class="vh-info-row"><div class="k">{% trans "Out today" %}</div>
+          <div class="v" style="color:#991B1B">− ₹{{ pos.outflow|floatformat:2 }}</div></div>
+        <div class="vh-info-row" style="border-top:1px solid #e5e7eb;padding-top:6px;margin-top:4px">
+          <div class="k" style="color:#c46616;font-weight:700">{% trans "Expected" %}</div>
+          <div class="v" style="font-weight:700">₹{{ pos.closing|floatformat:2 }}</div></div>
+      </div>
+      {% if pos.last_close_date %}
+      <div class="vh-action-card">
+        <h3>{% trans "Last close" %}</h3>
+        <div class="vh-info-row"><div class="k">{% trans "Date" %}</div>
+          <div class="v">{{ pos.last_close_date|date:"d M Y" }}</div></div>
+      </div>
+      {% endif %}
+    </aside>
+  </div>
+</div>
+
+<script>
+  function recompute() {
+    let total = 0;
+    document.querySelectorAll('.denom-input').forEach(inp => {
+      const denom = parseInt(inp.dataset.denom, 10);
+      const count = parseInt(inp.value, 10) || 0;
+      const sub = denom * count;
+      document.getElementById('sub_' + denom).textContent =
+        '₹' + sub.toLocaleString('en-IN', {minimumFractionDigits: 2});
+      total += sub;
+    });
+    document.getElementById('denom-total-value').textContent =
+      '₹' + total.toLocaleString('en-IN', {minimumFractionDigits: 2});
+  }
+  document.querySelectorAll('.denom-input').forEach(inp =>
+    inp.addEventListener('input', recompute));
+</script>
+{% endblock %}

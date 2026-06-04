@@ -1,0 +1,61 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+  .rpt {max-width: 1200px; margin: 20px auto; padding: 0 20px;
+        font-family: system-ui, -apple-system, sans-serif; color: #1f2937}
+  .rpt h1 {font-size: 22px; margin: 0 0 6px}
+  .rpt .sub {color: #6b7280; margin-bottom: 18px}
+  .rpt .toolbar {display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+                 background: #f9fafb; padding: 12px 16px; border-radius: 8px;
+                 margin-bottom: 18px; border: 1px solid #e5e7eb}
+  .rpt .toolbar input, .rpt .toolbar select {padding: 6px 10px;
+        border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px}
+  .rpt .btn {display: inline-block; padding: 7px 14px; border-radius: 6px;
+             text-decoration: none; font-size: 14px; font-weight: 500;
+             border: 1px solid transparent; cursor: pointer}
+  .rpt .btn-primary {background: #c46616; color: #fff}
+  .rpt .btn-primary:hover {background: #a24d11}
+  .rpt .btn-outline {background: #fff; color: #c46616; border-color: #c46616}
+  .rpt .btn-outline:hover {background: #fff7ed}
+  .rpt table {width: 100%; border-collapse: collapse; background: #fff;
+              border-radius: 8px; overflow: hidden;
+              box-shadow: 0 1px 2px rgba(0,0,0,.04)}
+  .rpt th {background: #c46616; color: #fff; text-align: left; padding: 10px 12px;
+           font-weight: 600; font-size: 13px; text-transform: uppercase;
+           letter-spacing: .03em}
+  .rpt td {padding: 10px 12px; border-bottom: 1px solid #f3f4f6;
+           font-size: 14px}
+  .rpt tr:nth-child(even) td {background: #fafafa}
+  .rpt tr:hover td {background: #fff7ed}
+  .rpt tfoot td {font-weight: 700; background: #fef3c7 !important;
+                 border-top: 2px solid #c46616}
+  .rpt .num {text-align: right; font-variant-numeric: tabular-nums;
+             font-family: ui-monospace, monospace}
+  .rpt .in {color: #047857}
+  .rpt .out {color: #b91c1c}
+  .rpt .pill {display: inline-block; padding: 2px 10px; border-radius: 999px;
+              font-size: 11px; font-weight: 600; text-transform: uppercase}
+  .rpt .pill-active {background: #dcfce7; color: #166534}
+  .rpt .pill-overdue {background: #fee2e2; color: #991b1b}
+  .rpt .pill-closed {background: #e5e7eb; color: #374151}
+  .rpt .cards {display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+               gap: 14px; margin-bottom: 20px}
+  .rpt .card {background: #fff; padding: 16px 18px; border-radius: 10px;
+              border: 1px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,.03)}
+  .rpt .card .label {font-size: 12px; color: #6b7280; text-transform: uppercase;
+                     letter-spacing: .05em; margin-bottom: 6px}
+  .rpt .card .value {font-size: 24px; font-weight: 700; color: #c46616}
+  .rpt .card .foot {margin-top: 6px; font-size: 12px; color: #6b7280}
+  .rpt .empty {text-align: center; padding: 40px; color: #6b7280;
+               background: #f9fafb; border-radius: 8px}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rpt">
+  {% block report %}{% endblock %}
+</div>
+{% endblock %}

@@ -1,0 +1,129 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}{{ block.super }}
+<link rel="stylesheet" href="{% static 'vaarahi/vaarahi.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="vh-detail">
+
+  <div class="vh-crumb">
+    <a href="/admin/">{% trans "Dashboard" %}</a> ›
+    <span>{% trans "Cash Book" %} — {{ on_date|date:"d M Y" }}</span>
+  </div>
+
+  <div class="vh-hero-light">
+    <div class="id-block">
+      <div class="small">{% trans "Date" %}</div>
+      <div class="big">{{ on_date|date:"d M" }}</div>
+    </div>
+    <div>
+      <h1>{% trans "Cash Book" %}{% if branch %} &middot; {{ branch.code }}{% endif %}</h1>
+      <div class="meta">
+        {% blocktrans with date=on_date|date:"l, d M Y" %}Day view for {{ date }}{% endblocktrans %}
+        &middot; {{ transactions|length }} {% trans "transactions" %}
+        {% if pos.last_close_date %}
+          &middot; {% blocktrans with d=pos.last_close_date|date:"d M Y" %}Last close: {{ d }}{% endblocktrans %}
+        {% endif %}
+      </div>
+    </div>
+    <div class="actions">
+      <a href="{{ add_txn_url }}" class="vh-btn vh-btn-primary">
+        <span class="material-symbols-outlined">add</span>{% trans "Manual entry" %}</a>
+      <a href="{{ day_close_url }}" class="vh-btn vh-btn-accent">
+        <span class="material-symbols-outlined">event_available</span>{% trans "Day Close" %}</a>
+    </div>
+  </div>
+
+  <form class="vh-toolbar" method="get">
+    <label>{% trans "Date" %} <input type="date" name="date" value="{{ on_date|date:'Y-m-d' }}"></label>
+    <label>{% trans "Branch" %}
+      <select name="branch">
+        <option value="">{% trans "All branches" %}</option>
+        {% for b in branches %}
+          <option value="{{ b.pk }}" {% if branch and branch.pk == b.pk %}selected{% endif %}>{{ b.code }} — {{ b.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <button class="vh-btn vh-btn-primary" type="submit">{% trans "Apply" %}</button>
+  </form>
+
+  <div class="vh-kpi-grid" style="margin-bottom:18px">
+    <div class="vh-kpi">
+      <div class="vh-kpi-label">{% trans "Opening" %}</div>
+      <div class="vh-kpi-value">₹{{ pos.opening|floatformat:2 }}</div>
+      <div class="vh-kpi-foot">{% trans "Brought forward" %}</div>
+    </div>
+    <div class="vh-kpi">
+      <div class="vh-kpi-label">{% trans "In today" %}</div>
+      <div class="vh-kpi-value" style="color:#166534">+ ₹{{ pos.inflow|floatformat:2 }}</div>
+      <div class="vh-kpi-foot">{% trans "Repayments + capital + bank in" %}</div>
+    </div>
+    <div class="vh-kpi">
+      <div class="vh-kpi-label">{% trans "Out today" %}</div>
+      <div class="vh-kpi-value" style="color:#991B1B">− ₹{{ pos.outflow|floatformat:2 }}</div>
+      <div class="vh-kpi-foot">{% trans "Disbursements + drawals + expenses" %}</div>
+    </div>
+    <div class="vh-kpi">
+      <div class="vh-kpi-label">{% trans "Closing (system)" %}</div>
+      <div class="vh-kpi-value">₹{{ pos.closing|floatformat:2 }}</div>
+      <div class="vh-kpi-foot">{% trans "Opening + In − Out" %}</div>
+    </div>
+    <div class="vh-kpi">
+      <div class="vh-kpi-label">{% trans "Total cash (all branches)" %}</div>
+      <div class="vh-kpi-value">₹{{ total_cash|floatformat:2 }}</div>
+      <div class="vh-kpi-foot">{% trans "Across all active branches" %}</div>
+    </div>
+    <div class="vh-kpi">
+      <div class="vh-kpi-label">{% trans "Owner liability" %}</div>
+      <div class="vh-kpi-value">₹{{ cap.net_owner_liability|floatformat:2 }}</div>
+      <div class="vh-kpi-foot">{% trans "Capital injected − drawals" %}</div>
+    </div>
+  </div>
+
+  {% if transactions %}
+  <table class="vh-table">
+    <thead><tr>
+      <th>{% trans "Time" %}</th>
+      <th>{% trans "Kind" %}</th>
+      <th>{% trans "Party / Note" %}</th>
+      <th>{% trans "Mode" %}</th>
+      <th class="vh-num">{% trans "In" %}</th>
+      <th class="vh-num">{% trans "Out" %}</th>
+      <th>{% trans "By" %}</th>
+    </tr></thead>
+    <tbody>
+      {% for t in transactions %}
+      <tr>
+        <td>{{ t.created_at|date:"H:i" }}</td>
+        <td>{{ t.get_kind_display }}</td>
+        <td>
+          {% if t.source_loan %}
+            <a href="{% url 'loans:detail' t.source_loan.pk %}" style="color:#c46616">{{ t.source_loan.customer.name }}</a>
+          {% elif t.source_repayment %}
+            <a href="{% url 'loans:repayment_detail' t.source_repayment.pk %}" style="color:#c46616">{{ t.source_repayment.loan.customer.name }}</a>
+          {% endif %}
+          <div style="font-size:11px;color:#6b7280">{{ t.note }}</div>
+        </td>
+        <td>{{ t.get_mode_display }}</td>
+        <td class="vh-num" style="color:#166534">{% if t.in_amount %}+ ₹{{ t.in_amount|floatformat:2 }}{% endif %}</td>
+        <td class="vh-num" style="color:#991B1B">{% if t.out_amount %}− ₹{{ t.out_amount|floatformat:2 }}{% endif %}</td>
+        <td>{{ t.created_by|default:"—" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="4" style="text-align:right">{% trans "Totals" %}</td>
+        <td class="vh-num" style="color:#166534">+ ₹{{ pos.inflow|floatformat:2 }}</td>
+        <td class="vh-num" style="color:#991B1B">− ₹{{ pos.outflow|floatformat:2 }}</td>
+        <td></td>
+      </tr>
+    </tfoot>
+  </table>
+  {% else %}
+  <div class="vh-empty">{% trans "No cash transactions on this date." %}</div>
+  {% endif %}
+</div>
+{% endblock %}

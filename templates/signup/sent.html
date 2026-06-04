@@ -1,0 +1,20 @@
+{% extends "signup/_base.html" %}
+{% block content %}
+<h1>📧 Check your email</h1>
+<p class="sub">{% if signup %}We sent a confirmation link to <strong>{{ signup.owner_email }}</strong>.{% else %}We sent a confirmation link to your email.{% endif %} Click it within 24 hours to activate your portal.</p>
+
+{% if signup %}
+<div style="background:#fff7ed;border:1px solid #c46616;border-radius:8px;padding:14px 18px;font-size:13px">
+  <strong>Your portal will be:</strong><br>
+  <code style="background:#fff;padding:2px 8px;border-radius:4px;color:#c46616">
+    http://{{ signup.slug }}.{{ request.get_host }}/admin/
+  </code><br>
+  <span style="font-size:11px;color:#6b7280">(Active after you confirm the email)</span>
+</div>
+{% endif %}
+
+<p style="font-size:12px;color:#6b7280;margin-top:18px">
+  Didn't get the email? Check your spam folder. If you still don't see it, you can
+  <a href="{% url 'signup:form' %}" style="color:#c46616">start over</a>.
+</p>
+{% endblock %}

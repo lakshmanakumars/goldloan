@@ -1,0 +1,241 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}{{ block.super }}
+<link rel="stylesheet" href="{% static 'vaarahi/vaarahi.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="vh-detail">
+
+  <div class="vh-crumb">
+    <a href="/admin/">Dashboard</a> ›
+    <a href="{% url 'admin:customers_customer_changelist' %}">Customers</a> ›
+    <span>{{ customer.code }} {{ customer.name }}</span>
+  </div>
+
+  <div class="vh-hero-light">
+    <div class="avatar">
+      {% if customer.photo %}<img src="{{ customer.photo.url }}" alt="">
+      {% else %}{{ customer.name|slice:":1"|upper }}{% endif %}
+    </div>
+    <div>
+      <h1>{{ customer.name }}</h1>
+      <div class="meta">
+        <strong>{{ customer.code }}</strong>
+        &middot; {{ customer.phone }}
+        {% if customer.email %}&middot; {{ customer.email }}{% endif %}
+        {% if customer.branch %}&middot; Branch {{ customer.branch.code }}{% endif %}
+        <br>
+        {% if customer.pan %}PAN <strong>{{ customer.pan }}</strong>{% endif %}
+        {% if customer.aadhaar %}&middot; Aadhaar {{ customer.aadhaar_masked }}{% endif %}
+        {% if customer.city %}&middot; {{ customer.city }}{% if customer.state %}, {{ customer.state }}{% endif %}{% endif %}
+      </div>
+    </div>
+    <div class="actions">
+      {% if whatsapp_url %}
+      <a href="{{ whatsapp_url }}" target="_blank" class="vh-btn vh-btn-whatsapp">
+        <span class="material-symbols-outlined">chat</span>WhatsApp</a>
+      {% endif %}
+      <a href="tel:{{ customer.phone }}" class="vh-btn vh-btn-accent">
+        <span class="material-symbols-outlined">call</span>Call</a>
+      <a href="{{ add_loan_url }}" class="vh-btn vh-btn-primary">
+        <span class="material-symbols-outlined">add</span>New Loan</a>
+      <a href="{{ edit_url }}" class="vh-btn vh-btn-ghost">
+        <span class="material-symbols-outlined">edit</span>Edit</a>
+    </div>
+  </div>
+
+  <div class="vh-kpi-grid" style="margin-bottom:18px">
+    <div class="vh-kpi">
+      <div class="vh-kpi-label">Active loans</div>
+      <div class="vh-kpi-value">{{ active_loans|length }}</div>
+      <div class="vh-kpi-foot">{{ closed_loans|length }} closed</div>
+    </div>
+    <div class="vh-kpi">
+      <div class="vh-kpi-label">Outstanding principal</div>
+      <div class="vh-kpi-value">₹{{ total_outstanding|floatformat:2 }}</div>
+      <div class="vh-kpi-foot">across all active loans</div>
+    </div>
+    <div class="vh-kpi">
+      <div class="vh-kpi-label">Interest due now</div>
+      <div class="vh-kpi-value">₹{{ total_interest_due|floatformat:2 }}</div>
+      <div class="vh-kpi-foot">accrued minus paid</div>
+    </div>
+    <div class="vh-kpi">
+      <div class="vh-kpi-label">Lifetime borrowed</div>
+      <div class="vh-kpi-value">₹{{ lifetime_borrowed|floatformat:2 }}</div>
+      <div class="vh-kpi-foot">since first loan</div>
+    </div>
+    <div class="vh-kpi">
+      <div class="vh-kpi-label">Interest paid lifetime</div>
+      <div class="vh-kpi-value">₹{{ lifetime_interest_paid|floatformat:2 }}</div>
+      <div class="vh-kpi-foot">your earned profit</div>
+    </div>
+  </div>
+
+  <div class="vh-layout">
+    <div>
+      <div class="vh-tabs">
+        <button class="vh-tab active" data-tab="loans" type="button">
+          <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">account_balance_wallet</span>
+          Loans ({{ loans|length }})
+        </button>
+        <button class="vh-tab" data-tab="activity" type="button">
+          <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">history</span>
+          Activity ({{ events|length }})
+        </button>
+        <button class="vh-tab" data-tab="kyc" type="button">
+          <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">badge</span>
+          KYC & Address
+        </button>
+      </div>
+
+      <div class="vh-tab-panel active" id="panel-loans">
+        {% if active_loans %}
+        <h3 class="vh-section-title" style="margin-top:4px">Active</h3>
+        <table class="vh-table" style="margin-bottom:18px">
+          <thead><tr>
+            <th>Loan #</th>
+            <th class="vh-num">Principal</th>
+            <th class="vh-num">Outstanding</th>
+            <th class="vh-num">Interest due</th>
+            <th>Rate</th><th>Maturity</th><th>Status</th><th>Actions</th>
+          </tr></thead>
+          <tbody>
+            {% for L in active_loans %}
+            <tr>
+              <td><a href="{% url 'loans:detail' L.pk %}" style="color:#c46616;font-weight:600;text-decoration:none">{{ L.loan_no }}</a></td>
+              <td class="vh-num">₹{{ L.principal.amount|floatformat:2 }}</td>
+              <td class="vh-num"><b>₹{{ L.outstanding_principal.amount|floatformat:2 }}</b></td>
+              <td class="vh-num">₹{{ L.interest_due_now.amount|floatformat:2 }}</td>
+              <td>{{ L.interest_rate_pct }}% {% if L.rate_type == 'monthly' %}p.m.{% else %}p.a.{% endif %}</td>
+              <td>{{ L.maturity_date|date:"d M Y" }}</td>
+              <td><span class="vh-pill {% if L.status == 'active' %}vh-pill-active{% elif L.status == 'overdue' %}vh-pill-overdue{% else %}vh-pill-closed{% endif %}">{{ L.get_status_display }}</span></td>
+              <td><a href="{% url 'loans:detail' L.pk %}" class="vh-btn vh-btn-ghost vh-btn-sm">View</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
+
+        {% if closed_loans %}
+        <h3 class="vh-section-title">Closed / Auctioned</h3>
+        <table class="vh-table">
+          <thead><tr>
+            <th>Loan #</th><th class="vh-num">Principal</th><th>Closed on</th>
+            <th>Status</th><th>Actions</th>
+          </tr></thead>
+          <tbody>
+            {% for L in closed_loans %}
+            <tr>
+              <td>{{ L.loan_no }}</td>
+              <td class="vh-num">₹{{ L.principal.amount|floatformat:2 }}</td>
+              <td>{{ L.closed_at|date:"d M Y"|default:"—" }}</td>
+              <td><span class="vh-pill vh-pill-closed">{{ L.get_status_display }}</span></td>
+              <td><a href="{% url 'loans:detail' L.pk %}" class="vh-btn vh-btn-ghost vh-btn-sm">View</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
+
+        {% if not loans %}
+        <div class="vh-empty">
+          No loans yet for this customer.
+          <div style="margin-top:12px"><a href="{{ add_loan_url }}" class="vh-btn vh-btn-primary">
+            <span class="material-symbols-outlined">add</span>Create first loan</a></div>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="vh-tab-panel" id="panel-activity">
+        {% if events %}
+        <ul class="vh-timeline">
+          {% for e in events %}
+          <li>
+            <div class="ic"><span class="material-symbols-outlined">{{ e.icon }}</span></div>
+            <div style="flex:1">
+              <div class="ev-title">{{ e.title }}</div>
+              <div class="ev-desc">{{ e.desc }}</div>
+              <div class="ev-when">{{ e.when|date:"d M Y" }}</div>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <div class="vh-empty">No activity recorded yet.</div>
+        {% endif %}
+      </div>
+
+      <div class="vh-tab-panel" id="panel-kyc">
+        <div class="vh-card">
+          <h3 class="vh-section-title">Identity</h3>
+          <div class="vh-info-row"><div class="k">Code</div><div class="v">{{ customer.code }}</div></div>
+          <div class="vh-info-row"><div class="k">Name</div><div class="v">{{ customer.name }}</div></div>
+          <div class="vh-info-row"><div class="k">DOB</div><div class="v">{{ customer.dob|default:"—" }}</div></div>
+          <div class="vh-info-row"><div class="k">Gender</div><div class="v">{{ customer.get_gender_display|default:"—" }}</div></div>
+          <div class="vh-info-row"><div class="k">PAN</div><div class="v">{{ customer.pan|default:"—" }}</div></div>
+          <div class="vh-info-row"><div class="k">Aadhaar</div><div class="v">{% if customer.aadhaar %}{{ customer.aadhaar_masked }}{% else %}—{% endif %}</div></div>
+          <div class="vh-info-row"><div class="k">Phone</div><div class="v">{{ customer.phone }}</div></div>
+          {% if customer.alt_phone %}<div class="vh-info-row"><div class="k">Alt phone</div><div class="v">{{ customer.alt_phone }}</div></div>{% endif %}
+          <div class="vh-info-row"><div class="k">Email</div><div class="v">{{ customer.email|default:"—" }}</div></div>
+          <div class="vh-info-row"><div class="k">Pref. lang</div><div class="v">{{ customer.get_preferred_language_display }}</div></div>
+        </div>
+        <div class="vh-card" style="margin-top:14px">
+          <h3 class="vh-section-title">Address</h3>
+          <div class="vh-info-row"><div class="k">Line 1</div><div class="v">{{ customer.address_line1|default:"—" }}</div></div>
+          {% if customer.address_line2 %}<div class="vh-info-row"><div class="k">Line 2</div><div class="v">{{ customer.address_line2 }}</div></div>{% endif %}
+          <div class="vh-info-row"><div class="k">City</div><div class="v">{{ customer.city|default:"—" }}</div></div>
+          <div class="vh-info-row"><div class="k">State</div><div class="v">{{ customer.state|default:"—" }}</div></div>
+          <div class="vh-info-row"><div class="k">Pincode</div><div class="v">{{ customer.pincode|default:"—" }}</div></div>
+        </div>
+        {% if customer.id_proof %}
+        <div class="vh-card" style="margin-top:14px">
+          <h3 class="vh-section-title">ID Proof</h3>
+          <a href="{{ customer.id_proof.url }}" target="_blank" class="vh-btn vh-btn-accent">
+            <span class="material-symbols-outlined">attachment</span>Open document</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <aside>
+      <div class="vh-action-card">
+        <h3>Quick actions</h3>
+        <div class="stack">
+          <a href="{{ add_loan_url }}" class="vh-btn vh-btn-primary">
+            <span class="material-symbols-outlined">add</span>New loan</a>
+          {% if whatsapp_url %}
+          <a href="{{ whatsapp_url }}" target="_blank" class="vh-btn vh-btn-whatsapp">
+            <span class="material-symbols-outlined">chat</span>Send WhatsApp</a>
+          {% endif %}
+          <a href="tel:{{ customer.phone }}" class="vh-btn vh-btn-accent">
+            <span class="material-symbols-outlined">call</span>Call {{ customer.phone }}</a>
+          <a href="{{ edit_url }}" class="vh-btn vh-btn-ghost">
+            <span class="material-symbols-outlined">edit</span>Edit KYC</a>
+        </div>
+      </div>
+      <div class="vh-action-card">
+        <h3>Summary</h3>
+        <div class="vh-info-row"><div class="k">Customer</div><div class="v">{{ customer.code }}</div></div>
+        <div class="vh-info-row"><div class="k">Created</div><div class="v">{{ customer.created_at|date:"d M Y" }}</div></div>
+        <div class="vh-info-row"><div class="k">Updated</div><div class="v">{{ customer.updated_at|date:"d M Y" }}</div></div>
+        <div class="vh-info-row"><div class="k">Active loans</div><div class="v">{{ active_loans|length }}</div></div>
+        <div class="vh-info-row"><div class="k">Closed</div><div class="v">{{ closed_loans|length }}</div></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.vh-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.vh-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.vh-tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% load i18n %}{% spaceless %}
+{% if live_gold_rates %}
+<div class="vh-rate-ticker"{% if live_gold_rates.stale %} data-stale="1"{% endif %}>
+  <div class="vh-rate-ticker-track">
+    {% for _ in "12" %}
+    <div class="vh-rate-ticker-content" {% if forloop.last %}aria-hidden="true"{% endif %}>
+      <span class="vh-rate-label">
+        <span class="material-symbols-outlined">monitoring</span>
+        {% if live_gold_rates.stale %}{% trans "Last Gold Rate" %}{% else %}{% trans "Live Gold Rate" %}{% endif %}{% if live_gold_rates.city %} · {{ live_gold_rates.city }}{% endif %}
+      </span>
+      <span class="vh-rate-item"><b>24K</b> ₹{{ live_gold_rates.rates.24|floatformat:0 }}/g</span>
+      <span class="vh-rate-item"><b>22K</b> ₹{{ live_gold_rates.rates.22|floatformat:0 }}/g</span>
+      <span class="vh-rate-item"><b>18K</b> ₹{{ live_gold_rates.rates.18|floatformat:0 }}/g</span>
+      {% if live_gold_rates.usd_per_oz %}
+      <span class="vh-rate-item vh-rate-sub">{% trans "Spot" %} ${{ live_gold_rates.usd_per_oz|floatformat:2 }}/oz</span>
+      <span class="vh-rate-item vh-rate-sub">USD/INR ₹{{ live_gold_rates.usd_inr|floatformat:2 }}</span>
+      {% endif %}
+      <span class="vh-rate-source">
+        {{ live_gold_rates.source }} · {% trans "updated" %} {{ live_gold_rates.fetched_at|date:"d M H:i" }}
+      </span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endspaceless %}
