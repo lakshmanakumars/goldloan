@@ -267,6 +267,16 @@ UNFOLD = {
         # overrides win. Re-themes --vh-* and Unfold's --color-primary-*.
         lambda request: str(reverse_lazy('core:theme_css')),
     ],
+    'SITE_FAVICONS': [
+        {'rel': 'icon', 'type': 'image/svg+xml',
+         'href': lambda request: static('vaarahi/favicon.svg')},
+        {'rel': 'icon', 'sizes': '32x32', 'type': 'image/png',
+         'href': lambda request: static('vaarahi/favicon-32x32.png')},
+        {'rel': 'icon', 'sizes': '16x16', 'type': 'image/png',
+         'href': lambda request: static('vaarahi/favicon-16x16.png')},
+        {'rel': 'apple-touch-icon', 'sizes': '180x180',
+         'href': lambda request: static('vaarahi/favicon-180x180.png')},
+    ],
     # Original orange palette (restored)
     'COLORS': {
         'primary': {

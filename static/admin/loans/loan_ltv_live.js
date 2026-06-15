@@ -52,48 +52,55 @@
 
     function readRows() {
         // The inline prefix is "items" (GoldItem.loan related_name).
+        //
+        // Robustness notes — this admin's inline has no DELETE checkboxes
+        // (rows are added/removed purely in the DOM by Unfold), and removing
+        // then re-adding rows can leave stale/duplicate "items-N-*" inputs.
+        // So we DON'T look fields up by global name (that returns the first
+        // matching node and double-counts). Instead, for each gross input we
+        // walk to its OWN row and read every field relative to that row, and
+        // we dedupe by row node so the same row is never counted twice.
         var rows = [];
+        var seen = [];   // row DOM nodes already processed
         var grossInputs = document.querySelectorAll(
             'input[name^="items-"][name$="-gross_weight_g"]');
         grossInputs.forEach(function (g) {
-            var m = g.name.match(/^items-(\d+)-gross_weight_g$/);
-            if (!m) return;
-            var i = m[1];
+            // Exclude the hidden empty-form template (items-__prefix__-...).
+            if (g.name.indexOf('__prefix__') !== -1) return;
+            if (!/^items-\d+-gross_weight_g$/.test(g.name)) return;
 
-            // Skip rows marked for deletion.
-            var del = document.querySelector(
-                'input[name="items-' + i + '-DELETE"]');
+            // Skip rows removed/hidden in the UI (display:none → no layout box).
+            if (g.offsetParent === null) return;
+
+            // The row this gross input belongs to. Read everything from here
+            // so we never pick up another row's value.
+            var row = g.closest('tr') || g.parentNode;
+            if (!row || row.classList.contains('empty-form')) return;
+            if (seen.indexOf(row) !== -1) return;   // dedupe by row node
+            seen.push(row);
+
+            // DELETE checkbox, if this inline ever renders one.
+            var del = row.querySelector('input[name$="-DELETE"]');
             if (del && del.checked) return;
 
+            function rowVal(suffix) {
+                var el = row.querySelector(
+                    'input[name^="items-"][name$="-' + suffix + '"]');
+                return el ? el.value : '';
+            }
+
             var gross = parseFloat(g.value) || 0;
-            var stoneEl = document.querySelector(
-                'input[name="items-' + i + '-stone_weight_g"]');
-            var stone = parseFloat(stoneEl && stoneEl.value) || 0;
-            var netEl = document.querySelector(
-                'input[name="items-' + i + '-net_weight_g"]');
-            var netVal = parseFloat(netEl && netEl.value) || 0;
+            var stone = parseFloat(rowVal('stone_weight_g')) || 0;
+            var netVal = parseFloat(rowVal('net_weight_g')) || 0;
             var net = netVal > 0 ? netVal : Math.max(gross - stone, 0);
-
-            var purityEl = document.querySelector(
-                'input[name="items-' + i + '-purity_carat"]');
-            var purity = parseFloat(purityEl && purityEl.value) || 22;
-
-            var descEl = document.querySelector(
-                'input[name="items-' + i + '-description"]');
-            var desc = (descEl && descEl.value)
-                ? descEl.value : ('Row ' + (parseInt(i, 10) + 1));
-
-            // Capture whatever the user typed in the rate field — used in
-            // preference to the JSON rate lookup so the LTV reflects the
-            // form as-is, even on tenants with no GoldRate records yet.
-            var rateEl = document.querySelector(
-                'input[name="items-' + i + '-rate_per_gram_0"]');
-            var userRate = parseFloat(rateEl && rateEl.value) || 0;
+            var purity = parseFloat(rowVal('purity_carat')) || 22;
+            var descRaw = rowVal('description');
+            var desc = descRaw ? descRaw : ('Item ' + (rows.length + 1));
+            var userRate = parseFloat(rowVal('rate_per_gram_0')) || 0;
 
             if (net <= 0) return;
             rows.push({
-                i: i, net: net, purity: purity, desc: desc,
-                userRate: userRate,
+                net: net, purity: purity, desc: desc, userRate: userRate,
             });
         });
         return rows;
@@ -307,6 +314,17 @@
                 }, 0);
             }
         }, true);
+        // Django/Unfold dispatch these on the document when an inline row is
+        // added or removed. Removing a row fires NO input/change event, so
+        // without this the LTV breakdown stays frozen at the pre-removal
+        // state (showing rows that no longer exist). Defer so it runs after
+        // Unfold finishes removing + re-indexing the rows.
+        document.addEventListener('formset:added', function () {
+            setTimeout(function () { autoFillAll(); recompute(); }, 0);
+        });
+        document.addEventListener('formset:removed', function () {
+            setTimeout(recompute, 0);
+        });
         autoFillAll();
         recompute();
     }

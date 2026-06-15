@@ -150,7 +150,9 @@ class LoanAdmin(TenantModelAdmin):
 
     class Media:
         # Live LTV recompute for the inline gold-item rows (before save).
-        js = ('admin/loans/loan_ltv_live.js',)
+        # Leading slash → Django keeps the ?v= query (cache-bust); bump it
+        # whenever loan_ltv_live.js changes so browsers re-fetch.
+        js = ('/static/admin/loans/loan_ltv_live.js?v=4',)
 
     def render_change_form(self, request, context, add=False, change=False,
                            form_url='', obj=None):
