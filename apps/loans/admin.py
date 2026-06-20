@@ -148,6 +148,14 @@ class LoanAdmin(TenantModelAdmin):
     def get_fieldsets(self, request, obj=None):
         return self.change_fieldsets if obj else self.add_fieldsets
 
+    def get_changeform_initial_data(self, request):
+        """Pre-select the rate type from the tenant's default on new loans."""
+        initial = super().get_changeform_initial_data(request)
+        tenant = getattr(request, 'tenant', None)
+        if tenant is not None and getattr(tenant, 'default_rate_type', None):
+            initial.setdefault('rate_type', tenant.default_rate_type)
+        return initial
+
     class Media:
         # Live LTV recompute for the inline gold-item rows (before save).
         # Leading slash → Django keeps the ?v= query (cache-bust); bump it

@@ -52,7 +52,7 @@ class TenantAdmin(ModelAdmin):
     fieldsets = (
         ('Business', {
             'fields': ('name', 'slug', 'status', 'plan', 'trial_ends_at',
-                       'default_language', 'max_ltv_pct'),
+                       'default_language', 'max_ltv_pct', 'default_rate_type'),
         }),
         ('Compliance', {
             'fields': ('license_no', 'gst_no', 'pan_no'),

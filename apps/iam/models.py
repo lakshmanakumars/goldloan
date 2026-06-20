@@ -59,6 +59,18 @@ class Tenant(models.Model):
         help_text=_('RBI cap is 75%. Apply on origination.'),
     )
 
+    class DefaultRateType(models.TextChoices):
+        ANNUAL = 'annual', _('Per Annum (% p.a.)')
+        MONTHLY = 'monthly', _('Per Month (% p.m.)')
+
+    default_rate_type = models.CharField(
+        _('Default interest rate type'),
+        max_length=10, choices=DefaultRateType.choices,
+        default=DefaultRateType.MONTHLY,
+        help_text=_('Pre-selected interest rate type when staff create a new '
+                    'loan. Values match Loan.RateType.'),
+    )
+
     # --- white-label branding ---
     logo = models.ImageField(
         _('Logo'), upload_to='tenant/logos/', blank=True, null=True,
