@@ -121,6 +121,9 @@ USE_I18N = True
 USE_TZ = True
 USE_L10N = True
 
+# Day-first (dd-mm-yyyy) date formatting everywhere. See config/formats/en/.
+FORMAT_MODULE_PATH = ['config.formats']
+
 # Supported UI languages. Customer-facing messages additionally use
 # Customer.preferred_language to render the message body.
 LANGUAGES = [
@@ -262,10 +265,16 @@ UNFOLD = {
     'SHOW_VIEW_ON_SITE': False,
     'DASHBOARD_CALLBACK': 'config.dashboard.dashboard_callback',
     'STYLES': [
+        lambda request: static('vaarahi/vendor/flatpickr.min.css'),
         lambda request: static('vaarahi/vaarahi.css'),
         # Per-tenant palette — MUST load after vaarahi.css so its :root
         # overrides win. Re-themes --vh-* and Unfold's --color-primary-*.
         lambda request: str(reverse_lazy('core:theme_css')),
+    ],
+    'SCRIPTS': [
+        # flatpickr lib must load before the init script that uses it.
+        lambda request: static('vaarahi/vendor/flatpickr.min.js'),
+        lambda request: static('vaarahi/admin-datepicker.js'),
     ],
     'SITE_FAVICONS': [
         {'rel': 'icon', 'type': 'image/svg+xml',

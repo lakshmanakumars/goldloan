@@ -9,6 +9,7 @@ Tenant data isolation itself happens at the queryset level via
 `TenantAwareManager` — this mixin only controls UI visibility.
 """
 from unfold.admin import ModelAdmin
+from apps.core.forms import TenantUniqueAdminForm
 from apps.core.permissions import role_can, R, W
 
 
@@ -53,5 +54,9 @@ class TenantModelAdmin(TenantAdminMixin, ModelAdmin):
     """Convenience base class: Unfold ModelAdmin + tenant permission gates.
 
     Subclasses MUST set `tenant_resource` to one of the matrix keys.
+
+    Uses `TenantUniqueAdminForm` by default so tenant-scoped uniqueness
+    constraints produce friendly inline errors instead of a 500. Subclasses may
+    override `form` with a subclass of it to add model-specific validation.
     """
-    pass
+    form = TenantUniqueAdminForm

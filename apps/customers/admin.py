@@ -3,11 +3,13 @@ from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from apps.core.admin import TenantModelAdmin
+from .forms import CustomerAdminForm
 from .models import Customer
 
 
 @admin.register(Customer)
 class CustomerAdmin(TenantModelAdmin):
+    form = CustomerAdminForm
     tenant_resource = 'customer'
     list_display = ('code_link', 'name_link', 'phone', 'city', 'tools', 'created_at')
     list_display_links = None  # disable auto-link to change form
