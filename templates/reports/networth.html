@@ -4,7 +4,7 @@
 <h1>{% trans "Networth" %}</h1>
 <div class="sub">
   {% if nw.cash_book_available %}
-    {% trans "Complete networth: loan book + cash on hand + accrued interest − capital owed − expenses." %}
+    {% trans "Complete networth: loan book + cash on hand + accrued interest − net capital owed to owner. Collected interest and paid expenses are already reflected in cash on hand." %}
   {% else %}
     {% trans "Partial networth: no Cash Book entries yet, so cash on hand is treated as 0. Record an opening balance via Day Close to make this complete." %}
   {% endif %}
@@ -24,7 +24,7 @@
   <div class="card">
     <div class="label">{% trans "Cash on hand" %}</div>
     <div class="value">₹{{ nw.cash_on_hand|floatformat:2 }}</div>
-    <div class="foot">{% trans "Latest day-close per branch" %}</div>
+    <div class="foot">{% trans "Running balance across branches" %}</div>
   </div>
   <div class="card">
     <div class="label">{% trans "Accrued interest" %}</div>
@@ -62,14 +62,10 @@
         <td class="num">+ ₹{{ nw.cash_on_hand|floatformat:2 }}</td></tr>
     <tr><td>{% trans "Accrued unpaid interest" %}</td>
         <td class="num">+ ₹{{ nw.accrued_unpaid_interest|floatformat:2 }}</td></tr>
-    <tr><td>{% trans "Lifetime interest earned" %}</td>
-        <td class="num">+ ₹{{ nw.lifetime_interest_earned|floatformat:2 }}</td></tr>
     <tr><td>{% trans "Capital injected (owner loan to business)" %}</td>
         <td class="num" style="color:#991B1B">− ₹{{ nw.capital_injected|floatformat:2 }}</td></tr>
-    <tr><td>{% trans "Owner drawals" %}</td>
-        <td class="num" style="color:#991B1B">− ₹{{ nw.owner_drawals|floatformat:2 }}</td></tr>
-    <tr><td>{% trans "Operating expenses" %}</td>
-        <td class="num" style="color:#991B1B">− ₹{{ nw.expenses|floatformat:2 }}</td></tr>
+    <tr><td>{% trans "Owner drawals (returned, reduces capital owed)" %}</td>
+        <td class="num">+ ₹{{ nw.owner_drawals|floatformat:2 }}</td></tr>
   </tbody>
   <tfoot>
     <tr><td><b>{% trans "Total Networth" %}</b></td>

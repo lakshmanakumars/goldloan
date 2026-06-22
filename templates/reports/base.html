@@ -51,6 +51,11 @@
   .rpt .card .foot {margin-top: 6px; font-size: 12px; color: #6b7280}
   .rpt .empty {text-align: center; padding: 40px; color: #6b7280;
                background: #f9fafb; border-radius: 8px}
+  /* On small screens wide report tables scroll instead of overflowing. */
+  @media (max-width: 800px) {
+    .rpt {padding: 0 12px}
+    .rpt table {display: block; overflow-x: auto; white-space: nowrap}
+  }
 </style>
 {% endblock %}
 

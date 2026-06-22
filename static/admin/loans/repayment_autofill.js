@@ -44,8 +44,11 @@
           + '</b> · interest due <b style="color:#991b1b">₹'
           + fmtINR(balance.interest_due_now) + '</b> '
           + '<span style="color:#6b7280">(monthly ₹'
-          + fmtINR(balance.monthly_interest) + ' × '
-          + balance.months_charged + ')</span>';
+          + fmtINR(balance.monthly_interest)
+          + (balance.days_outstanding > 30
+                ? ', pro-rated over ' + balance.days_outstanding + ' days'
+                : ' for first 30 days')
+          + ')</span>';
         (anchor.parentNode || anchor).insertBefore(box, anchor.nextSibling);
     }
 

@@ -100,19 +100,38 @@ def capital_balance(tenant) -> CapitalBalance:
 
 
 def total_cash_on_hand(tenant) -> Decimal:
-    """Sum of cash position across all active branches.
+    """True running cash balance: for each branch, the most-recent day-close
+    closing balance plus *every* cash transaction recorded after that close
+    (or the sum of all transactions when the branch has never been closed).
 
-    `tenant=None` → iterate every active branch on the platform.
+    `tenant=None` → platform-wide across every branch.
+
+    Note: this deliberately does NOT use cash_position(), which is scoped to a
+    single day and silently drops any transaction between the last day-close
+    and today. It also iterates every branch that has cash activity (not just
+    active ones) so transactions on archived branches still count.
     """
-    from apps.iam.models import Branch
-    qs = Branch.objects.filter(is_active=True)
+    txn_qs = CashTransaction.all_objects.all()
+    close_qs = DayClose.all_objects.all()
     if tenant is not None:
-        qs = qs.filter(tenant=tenant)
+        txn_qs = txn_qs.filter(tenant=tenant)
+        close_qs = close_qs.filter(tenant=tenant)
+
+    branch_ids = (set(txn_qs.values_list('branch_id', flat=True))
+                  | set(close_qs.values_list('branch_id', flat=True)))
+
     total = Decimal('0')
-    for br in qs:
-        # Use the branch's own tenant for accuracy when aggregating globally
-        pos = cash_position(br.tenant, branch=br)
-        total += pos.closing
+    for bid in branch_ids:
+        b_txn = txn_qs.filter(branch_id=bid)
+        last_close = close_qs.filter(branch_id=bid).order_by('-close_date').first()
+        if last_close is not None:
+            opening = last_close.closing_balance.amount
+            b_txn = b_txn.filter(txn_date__gt=last_close.close_date)
+        else:
+            opening = Decimal('0')
+        inflow = _amt(b_txn.filter(kind__in=list(CashTransaction.IN_KINDS)))
+        outflow = _amt(b_txn.filter(kind__in=list(CashTransaction.OUT_KINDS)))
+        total += opening + inflow - outflow
     return total.quantize(Decimal('0.01'))
 
 

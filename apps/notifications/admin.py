@@ -1,7 +1,10 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from urllib.parse import quote
+from unfold.contrib.filters.admin import ChoicesDropdownFilter
 from apps.core.admin import TenantModelAdmin
+from apps.core.filters import (
+    FlatpickrRangeDateFilter, FlatpickrRangeDateTimeFilter)
 from .models import InterestReminder
 
 
@@ -10,7 +13,12 @@ class InterestReminderAdmin(TenantModelAdmin):
     tenant_resource = 'reminder'
     list_display = ('loan', 'period_month', 'channel', 'interest_due',
                     'status', 'sent_at', 'whatsapp_btn')
-    list_filter = ('status', 'channel', 'period_month')
+    list_filter = (
+        ('status', ChoicesDropdownFilter),
+        ('channel', ChoicesDropdownFilter),
+        ('period_month', FlatpickrRangeDateFilter),
+        ('sent_at', FlatpickrRangeDateTimeFilter),
+    )
     search_fields = ('loan__loan_no', 'to_phone', 'message')
     readonly_fields = ('sent_at', 'created_at', 'updated_at', 'error')
 

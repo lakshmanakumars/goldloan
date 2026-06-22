@@ -158,10 +158,22 @@ class Loan(TenantAwareModel, TimeStampedModel):
     months_elapsed = months_charged
 
     def interest_accrued(self, on_date=None) -> Money:
-        """Total interest that has built up from start_date to on_date."""
-        amt = (self.monthly_interest().amount
-               * Decimal(self.months_charged(on_date))).quantize(
-                   Decimal('0.01'))
+        """Total interest that has built up from start_date to on_date.
+
+        For the first 30 days a full month's interest is charged as a flat
+        minimum. Beyond 30 days interest is pro-rated on actual days elapsed
+        at a daily rate of monthly_interest / 30. (A loan whose start_date is
+        still in the future hasn't begun → 0.)
+        """
+        days = self.days_outstanding(on_date)
+        if self.start_date > (on_date or timezone.localdate()):
+            return Money(Decimal('0.00'), self.principal.currency)
+        monthly = self.monthly_interest().amount
+        if days <= 30:
+            amt = monthly
+        else:
+            amt = monthly * Decimal(days) / Decimal('30')
+        amt = amt.quantize(Decimal('0.01'))
         return Money(amt, self.principal.currency)
 
     def interest_due_now(self, on_date=None) -> Money:
@@ -186,14 +198,14 @@ class GoldItem(TenantAwareModel):
         _('Gross weight (g)'), max_digits=8, decimal_places=3,
         validators=[MinValueValidator(Decimal('0.000'))])
     stone_weight_g = models.DecimalField(
-        _('Stone weight (g)'), max_digits=8, decimal_places=3,
+        _('Wastage (g)'), max_digits=8, decimal_places=3,
         default=Decimal('0.000'),
         validators=[MinValueValidator(Decimal('0.000'))])
     net_weight_g = models.DecimalField(
         _('Net weight (g)'), max_digits=8, decimal_places=3,
         null=True, blank=True,
         validators=[MinValueValidator(Decimal('0.000'))],
-        help_text=_('Leave blank to auto-compute as Gross − Stone.'))
+        help_text=_('Leave blank to auto-compute as Gross − Wastage.'))
     purity_carat = models.DecimalField(
         _('Purity (ct)'), max_digits=4, decimal_places=2,
         default=Decimal('22.00'),

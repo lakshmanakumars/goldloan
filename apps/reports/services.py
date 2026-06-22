@@ -4,7 +4,7 @@ All functions accept an explicit tenant (or None for platform-wide) so they
 work both from request-driven views and from shell / Celery contexts.
 """
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 
 from django.db.models import Sum, Count, Q, F
@@ -15,6 +15,23 @@ from apps.loans.models import Loan, Repayment
 
 
 # ---------- helpers ----------
+
+def _local_dt_range(from_date, to_date):
+    """Half-open aware-datetime range [start, end) covering the local dates
+    from_date..to_date inclusive.
+
+    We compare paid_at against plain datetime bounds instead of using
+    ``paid_at__date`` lookups: on MySQL the ``__date`` lookup wraps the column
+    in ``CONVERT_TZ(...)``, which returns NULL when the server's named
+    timezone tables aren't loaded, so the filter would silently match nothing.
+    A direct datetime comparison needs no CONVERT_TZ.
+    """
+    tz = timezone.get_current_timezone()
+    start = timezone.make_aware(datetime.combine(from_date, time.min), tz)
+    end = timezone.make_aware(
+        datetime.combine(to_date + timedelta(days=1), time.min), tz)
+    return start, end
+
 
 def _money(amount, currency='INR'):
     from djmoney.money import Money
@@ -78,20 +95,20 @@ def compute_kpis(tenant=None) -> KPI:
     lifetime_disbursed = loans.aggregate(s=Sum('principal'))['s'] or Decimal('0')
     paid_principal = repays.aggregate(s=Sum('principal_paid'))['s'] or Decimal('0')
     paid_interest = repays.aggregate(s=Sum('interest_paid'))['s'] or Decimal('0')
-    interest_month = repays.filter(paid_at__date__gte=month_start).aggregate(
+    month_start_dt, _ = _local_dt_range(month_start, month_start)
+    interest_month = repays.filter(paid_at__gte=month_start_dt).aggregate(
         s=Sum('interest_paid'))['s'] or Decimal('0')
 
     outstanding = lifetime_disbursed - paid_principal
 
-    # Loan-book Networth = outstanding principal + interest accrued this month
-    # for currently-active loans that haven't paid this month yet.
+    # Loan-book Networth = outstanding principal + interest accrued-but-unpaid
+    # on every live loan. interest_due_now() applies the day-based accrual
+    # (flat first 30 days, then pro-rated) and nets off interest already paid,
+    # so this stays consistent with compute_networth().
     accrued_unpaid = Decimal('0')
-    for loan in loans.filter(status=Loan.Status.ACTIVE):
-        paid_this_month = loan.repayments.filter(
-            paid_at__date__gte=month_start
-        ).aggregate(s=Sum('interest_paid'))['s'] or Decimal('0')
-        accrued_unpaid += max(
-            loan.monthly_interest().amount - paid_this_month, Decimal('0'))
+    for loan in loans.filter(
+            status__in=[Loan.Status.ACTIVE, Loan.Status.OVERDUE]):
+        accrued_unpaid += loan.interest_due_now().amount
 
     networth = outstanding + accrued_unpaid
 
@@ -137,19 +154,22 @@ def compute_networth(tenant) -> Networth:
     interest_earned = repays.aggregate(
         s=Sum('interest_paid'))['s'] or Decimal('0')
 
-    # Networth =
-    #   Loan book outstanding (asset)
-    # + accrued interest (asset, not yet collected but earned)
-    # + cash on hand (asset)
-    # − capital_injected (liability to owner)
-    # − owner_drawals (cash already given back, reduces owner stake)
-    # − expenses (operating cost already paid out)
-    # + interest_earned (cumulative profit booked)
-    # Cleanest single line that matches typical SME accounting:
-    #   net = (loan_book + cash) + accrued + interest_earned
-    #         - capital_injected - drawals - expenses
-    net = (outstanding + cash + accrued + interest_earned
-           - cap.capital_in - cap.drawals - cap.expenses)
+    # Networth = total assets − total liabilities.
+    #
+    #   Assets      = loan book outstanding + accrued interest receivable + cash
+    #   Liabilities = net capital owed to owner = capital_injected − drawals
+    #
+    #   net = outstanding + accrued + cash − (capital_in − drawals)
+    #       = outstanding + accrued + cash − capital_in + drawals
+    #
+    # Collected interest and paid expenses are NOT separate terms: they have
+    # already flowed through `cash` (interest received raised cash, expenses
+    # lowered it). Adding interest_earned or subtracting expenses again would
+    # double-count them. Likewise drawals already lowered cash, so they are
+    # *added back* here because they reduce what the business still owes the
+    # owner.
+    net = (outstanding + accrued + cash
+           - cap.capital_in + cap.drawals)
 
     return Networth(
         loan_book_outstanding=outstanding.quantize(Decimal('0.01')),
@@ -181,8 +201,10 @@ class CashRow:
 def daily_cash_book(tenant, on_date=None):
     on_date = on_date or timezone.now().date()
     loans = _qs_loans(tenant).filter(start_date=on_date).select_related('customer')
+    day_start, day_end = _local_dt_range(on_date, on_date)
     repays = _qs_repayments(tenant).filter(
-        paid_at__date=on_date).select_related('loan__customer')
+        paid_at__gte=day_start, paid_at__lt=day_end,
+    ).select_related('loan__customer')
 
     events = []
     for loan in loans:
@@ -298,9 +320,10 @@ def outstanding_portfolio(tenant):
 # ---------- Interest Earned ----------
 
 def interest_earned(tenant, from_date, to_date):
+    start_dt, end_dt = _local_dt_range(from_date, to_date)
     repays = _qs_repayments(tenant).filter(
-        paid_at__date__gte=from_date,
-        paid_at__date__lte=to_date,
+        paid_at__gte=start_dt,
+        paid_at__lt=end_dt,
     ).select_related('loan__customer').order_by('paid_at')
 
     rows = []

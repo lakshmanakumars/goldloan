@@ -121,6 +121,11 @@ USE_I18N = True
 USE_TZ = True
 USE_L10N = True
 
+# Default rows-per-page on every admin list. Each list also accepts an on-the-
+# fly override via the ?per_page=N query param (bounded 5..500). Change this one
+# value to re-tune pagination everywhere.
+ADMIN_LIST_PER_PAGE = config('ADMIN_LIST_PER_PAGE', default=25, cast=int)
+
 # Day-first (dd-mm-yyyy) date formatting everywhere. See config/formats/en/.
 FORMAT_MODULE_PATH = ['config.formats']
 

@@ -2,7 +2,10 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
+from unfold.contrib.filters.admin import (
+    ChoicesDropdownFilter, FieldTextFilter)
 from apps.core.admin import TenantModelAdmin
+from apps.core.filters import FlatpickrRangeDateTimeFilter
 from .forms import CustomerAdminForm
 from .models import Customer
 
@@ -14,7 +17,13 @@ class CustomerAdmin(TenantModelAdmin):
     list_display = ('code_link', 'name_link', 'phone', 'city', 'tools', 'created_at')
     list_display_links = None  # disable auto-link to change form
     show_full_result_count = False
-    list_filter = ('gender', 'city', 'state', 'preferred_language')
+    list_filter = (
+        ('gender', ChoicesDropdownFilter),
+        ('preferred_language', ChoicesDropdownFilter),
+        ('city', FieldTextFilter),
+        ('state', FieldTextFilter),
+        ('created_at', FlatpickrRangeDateTimeFilter),
+    )
     search_fields = ('code', 'name', 'phone', 'pan', 'aadhaar')
     readonly_fields = ('code', 'created_at', 'updated_at')
 

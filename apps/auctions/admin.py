@@ -1,8 +1,10 @@
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
+from unfold.contrib.filters.admin import ChoicesDropdownFilter
 
 from apps.core.admin import TenantModelAdmin
+from apps.core.filters import FlatpickrRangeDateTimeFilter
 from .models import Auction, AuctionNotice
 
 
@@ -12,7 +14,11 @@ class AuctionAdmin(TenantModelAdmin):
     list_display = ('loan_link', 'customer', 'status_pill', 'eligible_at',
                     'notice1_sent_at', 'notice2_sent_at', 'scheduled_at',
                     'sold_amount_display', 'tools')
-    list_filter = ('status',)
+    list_filter = (
+        ('status', ChoicesDropdownFilter),
+        ('eligible_at', FlatpickrRangeDateTimeFilter),
+        ('scheduled_at', FlatpickrRangeDateTimeFilter),
+    )
     search_fields = ('loan__loan_no', 'loan__customer__name', 'bidder_name')
     readonly_fields = ('loan', 'eligible_at', 'notice1_sent_at',
                        'notice2_sent_at', 'surplus_refunded_at',
@@ -74,7 +80,10 @@ class AuctionNoticeAdmin(TenantModelAdmin):
     tenant_resource = 'auction'
     list_display = ('auction', 'notice_no', 'sent_at', 'channels',
                     'sent_by', 'pdf_link')
-    list_filter = ('notice_no',)
+    list_filter = (
+        'notice_no',
+        ('sent_at', FlatpickrRangeDateTimeFilter),
+    )
     search_fields = ('auction__loan__loan_no',)
     readonly_fields = ('auction', 'notice_no', 'sent_at', 'channels',
                        'delivery_ref', 'pdf_path', 'sent_by',

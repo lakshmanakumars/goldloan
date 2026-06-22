@@ -4,6 +4,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from apps.core.models import TenantAwareManager
+
 
 class Tenant(models.Model):
     """A pawn broker who rents the SaaS. Lives in the public/shared schema."""
@@ -201,6 +203,12 @@ class Branch(models.Model):
         _('Primary branch'), default=False,
         help_text=_('Used as the default when no branch is selected.'))
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # Tenant isolation: `objects` auto-filters by the current tenant (admin
+    # lists, FK dropdowns, list filters) so one tenant never sees another's
+    # branches. `all_objects` bypasses it for shell / cross-tenant scripts.
+    objects = TenantAwareManager()
+    all_objects = models.Manager()
 
     class Meta:
         verbose_name = _('Branch')

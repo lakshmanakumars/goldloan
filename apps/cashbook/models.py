@@ -50,12 +50,17 @@ class CashTransaction(TenantAwareModel, TimeStampedModel):
     branch = models.ForeignKey('iam.Branch', null=True, blank=True,
                                on_delete=models.SET_NULL,
                                related_name='cash_transactions')
+    # CASCADE (not SET_NULL): an auto-posted cash row only exists because of
+    # its source loan/repayment. If that source is deleted the cash entry must
+    # go too, otherwise it lingers as an orphan and overstates cash on hand.
+    # Manual entries (opening balance, capital, expenses) have no source and
+    # are unaffected.
     source_loan = models.ForeignKey('loans.Loan', null=True, blank=True,
-                                    on_delete=models.SET_NULL,
+                                    on_delete=models.CASCADE,
                                     related_name='cash_transactions')
     source_repayment = models.ForeignKey('loans.Repayment', null=True,
                                          blank=True,
-                                         on_delete=models.SET_NULL,
+                                         on_delete=models.CASCADE,
                                          related_name='cash_transactions')
     mode = models.CharField(_('Mode'), max_length=10, choices=Mode.choices,
                             default=Mode.CASH)

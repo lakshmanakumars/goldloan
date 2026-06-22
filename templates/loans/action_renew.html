@@ -12,7 +12,7 @@
 
   <form method="post" style="background:#fff;padding:16px 18px;border-radius:8px;border:1px solid #e5e7eb">
     {% csrf_token %}
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div class="vh-form-grid">
       <label>Tenure (months)
         <input type="number" name="tenure_months" value="{{ default_tenure }}" min="1" max="60" required style="display:block;width:100%;padding:6px 10px;margin-top:4px;border:1px solid #d1d5db;border-radius:6px">
       </label>

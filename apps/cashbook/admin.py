@@ -3,8 +3,11 @@ from decimal import Decimal
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
+from unfold.contrib.filters.admin import (
+    ChoicesDropdownFilter, RelatedDropdownFilter)
 
 from apps.core.admin import TenantModelAdmin
+from apps.core.filters import FlatpickrRangeDateFilter
 from .models import CashTransaction, DayClose
 
 
@@ -13,7 +16,12 @@ class CashTransactionAdmin(TenantModelAdmin):
     tenant_resource = 'cashbook'
     list_display = ('txn_date', 'kind_pill', 'amount_display', 'mode',
                     'party', 'note_short', 'created_by', 'auto_badge')
-    list_filter = ('kind', 'mode', 'branch', 'txn_date')
+    list_filter = (
+        ('kind', ChoicesDropdownFilter),
+        ('mode', ChoicesDropdownFilter),
+        ('branch', RelatedDropdownFilter),
+        ('txn_date', FlatpickrRangeDateFilter),
+    )
     search_fields = ('note', 'source_loan__loan_no',
                      'source_repayment__loan__loan_no')
     date_hierarchy = 'txn_date'
@@ -122,7 +130,10 @@ class DayCloseAdmin(TenantModelAdmin):
                     'computed_in_display', 'computed_out_display',
                     'closing_balance_display', 'physical_count_display',
                     'variance_display', 'closed_by')
-    list_filter = ('branch', 'close_date')
+    list_filter = (
+        ('branch', RelatedDropdownFilter),
+        ('close_date', FlatpickrRangeDateFilter),
+    )
     date_hierarchy = 'close_date'
     readonly_fields = ('opening_balance', 'computed_in', 'computed_out',
                        'closing_balance', 'variance', 'closed_by',

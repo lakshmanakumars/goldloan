@@ -68,6 +68,7 @@ def loan_balance_json(request, pk):
         'monthly_interest': str(monthly),
         'interest_due_now': str(interest_due),
         'months_charged': loan.months_charged(),
+        'days_outstanding': loan.days_outstanding(),
     })
 
 

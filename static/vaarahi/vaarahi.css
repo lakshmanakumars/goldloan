@@ -205,6 +205,21 @@
   /* Original Unfold mb-6 removed — margin lives on the sticky wrapper. */
 }
 
+/* ---- Filter panel must clear the sticky gold-ticker header ----------
+   .vh-sticky-header is sticky at top:0 with z-index:60. Unfold's filter
+   panel (#changelist-filter) sits lower, so its top — the "Filter" heading
+   AND the first filter's title — was hidden behind the header. Fix both
+   layouts: the slide-over sheet must cover the header; the 2xl sticky
+   sidebar must start below it. */
+#changelist-filter {
+  z-index: 70;                 /* sheet/overlay covers the header */
+}
+@media (min-width: 1536px) {   /* Tailwind 2xl: sticky sidebar mode */
+  #changelist-filter > div {
+    top: 7rem !important;      /* drop below the ~94px sticky header */
+  }
+}
+
 /* ---- Live gold-rate ticker (sits inside .vh-sticky-header) ---------*/
 .vh-rate-ticker {
   background: linear-gradient(90deg, var(--vh-primary) 0%,
@@ -461,4 +476,109 @@ header .material-symbols-outlined.bg-primary-600 {
 .sidebar header,
 nav[id="nav-sidebar"] header {
   background: #fff !important;
+}
+
+/* ============================================================
+   Responsive & alignment pass
+   ============================================================ */
+
+/* Narrower navigation sidebar → more horizontal room for content/tables.
+   #main is flex-grow, so it expands automatically. The collapse toggle's
+   open-position is matched in templates/admin/nav_sidebar.html. */
+.w-sidebar      { width: 15rem !important; }
+.min-w-sidebar  { min-width: 15rem !important; }
+
+/* Wide data tables scroll inside their panel instead of pushing the page
+   sideways. Cells stay on one line so the table grows past the container
+   and a local scrollbar appears. */
+.vh-tab-panel,
+.vh-card { overflow-x: auto; }
+.vh-table th,
+.vh-table td { white-space: nowrap; }
+
+/* Admin change-form inline tables (e.g. Gold items) scroll within their box
+   rather than overflowing the form (fallback if a row is still too wide). */
+.inline-group .module,
+.inline-related,
+.inline-related .module { overflow-x: auto; }
+
+/* Compact wide tabular inlines (Gold items, Repayments) so the row fits the
+   form width instead of forcing a horizontal scrollbar. Unfold gives every
+   field `min-w-20 w-full`, which stops columns from shrinking — override with
+   sensible per-type widths. */
+.inline-group .tabular td,
+.inline-group .tabular th { padding-left: 8px; padding-right: 8px; }
+.inline-group .tabular td input,
+.inline-group .tabular td select { min-width: 0; }
+.inline-group .tabular td input[type="number"] { width: 5rem; }     /* ~80px */
+.inline-group .tabular td input[type="text"]   { width: 8rem; }     /* ~128px */
+.inline-group .tabular td input[type="file"]   { width: 9rem; }
+.inline-group .tabular td select { width: auto; min-width: 4rem; }
+
+/* ---- Gold items inline: column sizing + compact delete/add controls ---- */
+/* Weight & purity number columns a bit wider; photo column narrower. */
+#items-group .tabular td input[type="number"] { width: 6.5rem; }
+#items-group .tabular td input[type="file"]   { width: 6rem; font-size: 12px; }
+#items-group thead th.column-photo,
+#items-group .tabular td.field-photo { width: 1%; }
+
+/* Delete column: small + centred, with a trash icon instead of the
+   "Delete?" word. */
+#items-group thead th:last-child {
+  width: 1%; text-align: center; white-space: nowrap; font-size: 0;
+}
+#items-group thead th:last-child::before {
+  font-family: 'Material Symbols Outlined'; content: 'delete';
+  font-size: 16px; color: var(--vh-muted);
+}
+#items-group td.delete { text-align: center; }
+
+/* Per-row "remove" link on newly-added rows → compact trash icon. */
+#items-group .inline-deletelink { font-size: 0 !important; color: #b91c1c; }
+#items-group .inline-deletelink::before {
+  font-family: 'Material Symbols Outlined'; content: 'delete'; font-size: 18px;
+}
+
+/* "Add another gold item" button aligned to the left. */
+#items-group .add-row { text-align: left !important; }
+#items-group .add-row a { float: left !important; }
+
+/* Tablet & narrow windows: more compact KPI boxes (smaller padding/value,
+   tighter min column width so more fit per row). */
+@media (max-width: 1366px) {
+  .vh-kpi-grid  { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+                  gap: 10px; }
+  .vh-kpi       { padding: 12px 14px; }
+  .vh-kpi-value { font-size: 20px; }
+  .vh-kpi-label { font-size: 10px; }
+  .vh-kpi-foot  { font-size: 11px; }
+}
+
+/* Detail two-column layout collapses earlier — covers tablet landscape
+   (iPad ~1024px), not just <980px. */
+@media (max-width: 1024px) {
+  .vh-layout { grid-template-columns: 1fr; }
+  .vh-detail { padding: 0 14px; }
+}
+
+/* Two-column form rows that collapse to one column on phones. */
+.vh-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* Phone / small-tablet polish. */
+@media (max-width: 640px) {
+  .vh-form-grid { grid-template-columns: 1fr; }
+  .vh-detail    { padding: 0 10px; margin: 10px auto; }
+  .vh-kpi-grid  { gap: 8px; }
+  .vh-kpi       { padding: 11px 12px; }
+  .vh-kpi-value { font-size: 18px; }
+  /* Tabs scroll sideways instead of wrapping into a tall messy block. */
+  .vh-tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .vh-tab  { padding: 9px 12px; white-space: nowrap; }
+  /* Key/value rows stack (label above value). */
+  .vh-info-row { grid-template-columns: 1fr; gap: 1px;
+                 padding: 6px 0; border-bottom: 1px solid var(--vh-border); }
+  /* Hero action buttons take the full row. */
+  .vh-hero-light .actions { margin-left: 0; width: 100%; }
+  /* Tighter ticker spacing. */
+  .vh-rate-ticker-content { gap: 16px; }
 }

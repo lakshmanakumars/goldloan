@@ -1,10 +1,15 @@
+from django import forms
 from django.contrib import admin
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from unfold.admin import TabularInline
+from unfold.contrib.filters.admin import (
+    ChoicesDropdownFilter, RelatedDropdownFilter)
 from apps.core.admin import TenantModelAdmin
+from apps.core.filters import (
+    FlatpickrRangeDateFilter, FlatpickrRangeDateTimeFilter)
 from apps.core.permissions import role_can, R, W
 from .models import Loan, GoldItem, Repayment
 
@@ -54,6 +59,17 @@ class GoldItemInline(_TenantInlineMixin, TabularInline):
         # "Add another Gold item" button adds one. On add, keep one blank row.
         return 0 if obj else 1
 
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        formfield = super().formfield_for_dbfield(db_field, request, **kwargs)
+        if db_field.name == 'rate_per_gram' and formfield is not None:
+            # INR-only: drop the currency picker from the gold-items layout.
+            # Swap Unfold's two-column split_money template for the plain
+            # multiwidget one and render the currency as a hidden input, so the
+            # amount takes the whole cell while Money still saves as INR.
+            formfield.widget.template_name = 'django/forms/widgets/multiwidget.html'
+            formfield.widget.widgets[1] = forms.HiddenInput()
+        return formfield
+
 
 class RepaymentInline(_TenantInlineMixin, TabularInline):
     model = Repayment
@@ -73,9 +89,15 @@ class LoanAdmin(TenantModelAdmin):
     # Clicking a row opens the read-only detail page (not the edit form);
     # editing is reached from a button on that detail page.
     list_display_links = None
-    list_filter = ('status', 'rate_type', 'start_date')
+    list_filter = (
+        ('status', ChoicesDropdownFilter),
+        ('rate_type', ChoicesDropdownFilter),
+        ('branch', RelatedDropdownFilter),
+        ('start_date', FlatpickrRangeDateFilter),
+        ('maturity_date', FlatpickrRangeDateFilter),
+    )
     search_fields = ('loan_no', 'customer__name', 'customer__phone',
-                     'packet_no')
+                     'customer__code', 'packet_no')
     readonly_fields = ('loan_no', 'maturity_date', 'closed_at',
                        'renewed_to', 'created_at', 'updated_at',
                        'ltv_summary', 'balance_summary',
@@ -491,8 +513,13 @@ class RepaymentAdmin(TenantModelAdmin):
     tenant_resource = 'repayment'
     list_display = ('loan', 'paid_at', 'principal_paid', 'interest_paid',
                     'mode', 'receipt_no', 'pdf_link')
-    list_filter = ('mode', 'paid_at')
-    search_fields = ('loan__loan_no', 'reference', 'receipt_no')
+    list_filter = (
+        ('mode', ChoicesDropdownFilter),
+        ('loan__status', ChoicesDropdownFilter),
+        ('paid_at', FlatpickrRangeDateTimeFilter),
+    )
+    search_fields = ('loan__loan_no', 'loan__customer__name',
+                     'reference', 'receipt_no')
     autocomplete_fields = ['loan']
 
     class Media:

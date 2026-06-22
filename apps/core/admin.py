@@ -8,9 +8,44 @@ ModelAdmin sets `tenant_resource` to one of the matrix keys (e.g. 'loan',
 Tenant data isolation itself happens at the queryset level via
 `TenantAwareManager` — this mixin only controls UI visibility.
 """
+from django.conf import settings
+from django.contrib.admin.views.main import ChangeList
 from unfold.admin import ModelAdmin
 from apps.core.forms import TenantUniqueAdminForm
 from apps.core.permissions import role_can, R, W
+
+
+class _ConfigurableChangeList(ChangeList):
+    """ChangeList that honours a per-request ``?per_page=N`` override so the
+    page size is configurable on the fly (bounded to a sane range). The default
+    comes from ``settings.ADMIN_LIST_PER_PAGE`` via the ModelAdmin.
+    """
+
+    def get_filters_params(self, params=None):
+        # Don't let ?per_page leak into the filter machinery (it isn't a field).
+        params = super().get_filters_params(params)
+        params.pop('per_page', None)
+        return params
+
+    def get_results(self, request):
+        per = request.GET.get('per_page')
+        if per:
+            try:
+                self.list_per_page = max(5, min(int(per), 500))
+            except (TypeError, ValueError):
+                pass
+        return super().get_results(request)
+
+
+class CrmListAdminMixin:
+    """Shared list-page behaviour: configurable pagination + Unfold's
+    filter "Apply" button. Mix into any Unfold ModelAdmin.
+    """
+    list_per_page = getattr(settings, 'ADMIN_LIST_PER_PAGE', 25)
+    list_filter_submit = True
+
+    def get_changelist(self, request, **kwargs):
+        return _ConfigurableChangeList
 
 
 class TenantAdminMixin:
@@ -50,7 +85,7 @@ class TenantAdminMixin:
         return user.tenant_id == tenant.id
 
 
-class TenantModelAdmin(TenantAdminMixin, ModelAdmin):
+class TenantModelAdmin(CrmListAdminMixin, TenantAdminMixin, ModelAdmin):
     """Convenience base class: Unfold ModelAdmin + tenant permission gates.
 
     Subclasses MUST set `tenant_resource` to one of the matrix keys.
@@ -58,5 +93,8 @@ class TenantModelAdmin(TenantAdminMixin, ModelAdmin):
     Uses `TenantUniqueAdminForm` by default so tenant-scoped uniqueness
     constraints produce friendly inline errors instead of a 500. Subclasses may
     override `form` with a subclass of it to add model-specific validation.
+
+    Inherits configurable pagination (``?per_page=N`` + ADMIN_LIST_PER_PAGE)
+    and the filter Apply button from CrmListAdminMixin.
     """
     form = TenantUniqueAdminForm

@@ -4,7 +4,10 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from unfold.admin import ModelAdmin
-from apps.core.admin import TenantModelAdmin
+from unfold.contrib.filters.admin import (
+    ChoicesDropdownFilter, RelatedDropdownFilter)
+from apps.core.admin import CrmListAdminMixin, TenantModelAdmin
+from apps.core.filters import FlatpickrRangeDateTimeFilter
 from .models import Tenant, User, Branch
 
 
@@ -13,7 +16,10 @@ class BranchAdmin(TenantModelAdmin):
     tenant_resource = 'branch'
     list_display = ('code', 'name', 'phone', 'is_primary', 'is_active',
                     'created_at')
-    list_filter = ('is_active', 'is_primary')
+    list_filter = (
+        'is_active', 'is_primary',
+        ('created_at', FlatpickrRangeDateTimeFilter),
+    )
     search_fields = ('code', 'name', 'phone', 'license_no', 'gst_no')
     fields = ('name', 'code', 'address', 'phone',
               'license_no', 'gst_no',
@@ -41,10 +47,15 @@ class TenantUserChangeForm(UserChangeForm):
 
 
 @admin.register(Tenant)
-class TenantAdmin(ModelAdmin):
+class TenantAdmin(CrmListAdminMixin, ModelAdmin):
     list_display = ('name', 'slug', 'status', 'plan',
                     'contact_phone', 'subdomain_link', 'created_at')
-    list_filter = ('status', 'plan')
+    list_filter = (
+        ('status', ChoicesDropdownFilter),
+        ('plan', ChoicesDropdownFilter),
+        ('default_language', ChoicesDropdownFilter),
+        ('created_at', FlatpickrRangeDateTimeFilter),
+    )
     search_fields = ('name', 'slug', 'contact_phone', 'contact_email',
                      'license_no', 'gst_no')
     readonly_fields = ('created_at', 'updated_at')
@@ -115,15 +126,20 @@ class TenantAdmin(ModelAdmin):
 
 
 @admin.register(User)
-class UserAdmin(DjangoUserAdmin, ModelAdmin):
+class UserAdmin(CrmListAdminMixin, DjangoUserAdmin, ModelAdmin):
     add_form = TenantUserCreationForm
     form = TenantUserChangeForm
     model = User
 
     list_display = ('username', 'email', 'tenant', 'is_tenant_owner',
                     'is_superuser', 'is_active', 'last_login')
-    list_filter = ('is_superuser', 'is_staff', 'is_active', 'is_tenant_owner',
-                   'tenant')
+    list_filter = (
+        'is_superuser', 'is_staff', 'is_active', 'is_tenant_owner',
+        ('tenant', RelatedDropdownFilter),
+        ('role', ChoicesDropdownFilter),
+        ('branch', RelatedDropdownFilter),
+        ('last_login', FlatpickrRangeDateTimeFilter),
+    )
     search_fields = ('username', 'email', 'first_name', 'last_name', 'phone')
 
     fieldsets = (
