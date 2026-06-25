@@ -111,7 +111,7 @@ class LoanAdmin(TenantModelAdmin):
     add_fieldsets = (
         ('Borrower', {
             'fields': ('customer', 'branch'),
-            'description': 'Pick the customer and (optionally) the branch. '
+            'description': 'Pick the customer and the branch. '
                            'Add gold items in the section below to see live '
                            'LTV-derived eligibility before you set principal.',
         }),
@@ -169,6 +169,23 @@ class LoanAdmin(TenantModelAdmin):
 
     def get_fieldsets(self, request, obj=None):
         return self.change_fieldsets if obj else self.add_fieldsets
+
+    def get_readonly_fields(self, request, obj=None):
+        """The borrower is fixed once a loan exists — make customer
+        read-only on the change form (still selectable when adding)."""
+        fields = super().get_readonly_fields(request, obj)
+        if obj is not None:
+            fields = tuple(fields) + ('customer',)
+        return fields
+
+    def get_form(self, request, obj=None, **kwargs):
+        """Branch is mandatory in the admin (both add and edit), even though
+        the model allows blank with a primary-branch fallback for other
+        code paths."""
+        form = super().get_form(request, obj, **kwargs)
+        if 'branch' in form.base_fields:
+            form.base_fields['branch'].required = True
+        return form
 
     def get_changeform_initial_data(self, request):
         """Pre-select the rate type from the tenant's default on new loans."""
@@ -511,8 +528,8 @@ class LoanAdmin(TenantModelAdmin):
 @admin.register(Repayment)
 class RepaymentAdmin(TenantModelAdmin):
     tenant_resource = 'repayment'
-    list_display = ('loan', 'paid_at', 'principal_paid', 'interest_paid',
-                    'mode', 'receipt_no', 'pdf_link')
+    list_display = ('receipt_no_display', 'loan', 'paid_at', 'principal_paid',
+                    'interest_paid', 'mode', 'pdf_link')
     list_filter = (
         ('mode', ChoicesDropdownFilter),
         ('loan__status', ChoicesDropdownFilter),
@@ -526,6 +543,13 @@ class RepaymentAdmin(TenantModelAdmin):
         # Pre-fill principal_paid / interest_paid from the selected loan's
         # live balance (fetched via loans:balance_json).
         js = ('admin/loans/repayment_autofill.js',)
+
+    def receipt_no_display(self, obj):
+        # Falls back to the row pk when no receipt number was generated/set,
+        # mirroring the PDF/detail page so the column is never blank.
+        return obj.receipt_no or obj.pk
+    receipt_no_display.short_description = 'Receipt no'
+    receipt_no_display.admin_order_field = 'receipt_no'
 
     def pdf_link(self, obj):
         url = reverse('loans:repayment_receipt', args=[obj.pk])
