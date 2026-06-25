@@ -83,12 +83,13 @@ class RepaymentInline(_TenantInlineMixin, TabularInline):
 @admin.register(Loan)
 class LoanAdmin(TenantModelAdmin):
     tenant_resource = 'loan'
-    list_display = ('loan_no_link', 'customer', 'principal', 'outstanding_display',
-                    'interest_due_display', 'rate_display',
-                    'maturity_date', 'status', 'tools')
+    list_display = ('loan_no_link', 'customer_link', 'principal',
+                    'outstanding_display', 'interest_due_display',
+                    'rate_display', 'maturity_date', 'status', 'tools')
     # Clicking a row opens the read-only detail page (not the edit form);
     # editing is reached from a button on that detail page.
     list_display_links = None
+    list_select_related = ('customer',)
     list_filter = (
         ('status', ChoicesDropdownFilter),
         ('rate_type', ChoicesDropdownFilter),
@@ -336,6 +337,15 @@ class LoanAdmin(TenantModelAdmin):
                            url, obj.loan_no)
     loan_no_link.short_description = 'Loan #'
     loan_no_link.admin_order_field = 'loan_no'
+
+    def customer_link(self, obj):
+        """Customer name/code linking straight to the customer detail page."""
+        url = reverse('customers:detail', args=[obj.customer_id])
+        return format_html(
+            '<a href="{}">{}</a> <small>{}</small>',
+            url, obj.customer.name, obj.customer.code)
+    customer_link.short_description = 'Customer'
+    customer_link.admin_order_field = 'customer__name'
 
     def tools(self, obj):
         """List-row quick buttons: PDF, WhatsApp."""
