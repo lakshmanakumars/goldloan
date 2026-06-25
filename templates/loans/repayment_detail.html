@@ -59,7 +59,7 @@
       <div class="big">{{ rp.receipt_no|default:rp.pk }}</div>
     </div>
     <div>
-      <h1>Payment from {{ customer.name }}</h1>
+      <h1>Payment from <a href="{{ customer_url }}" style="color:inherit;text-decoration:underline">{{ customer.name }}</a></h1>
       <div class="meta">
         {{ rp.paid_at|date:"d M Y H:i" }} &middot;
         Loan <a href="{{ loan_url }}" style="color:#c46616;font-weight:600">{{ loan.loan_no }}</a> &middot;
@@ -103,6 +103,9 @@
           <tr><td>Payment mode</td><td>{{ rp.get_mode_display }}{% if rp.reference %} ({{ rp.reference }}){% endif %}</td></tr>
           <tr><td>Principal paid</td><td>₹ {{ rp.principal_paid.amount|floatformat:2 }}</td></tr>
           <tr><td>Interest paid</td><td>₹ {{ rp.interest_paid.amount|floatformat:2 }}</td></tr>
+          {% if rp.interest_waived.amount > 0 %}
+          <tr><td>Interest waived <span style="color:#6b7280">(goodwill)</span></td><td>₹ {{ rp.interest_waived.amount|floatformat:2 }}</td></tr>
+          {% endif %}
         </table>
 
         <div class="total">

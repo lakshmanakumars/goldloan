@@ -17,6 +17,8 @@
     <div class="value">₹{{ data.total_in|floatformat:2 }}</div></div>
   <div class="card"><div class="label">{% trans "Interest earned" %}</div>
     <div class="value">₹{{ data.total_interest|floatformat:2 }}</div></div>
+  <div class="card"><div class="label">{% trans "Interest waived" %}</div>
+    <div class="value">₹{{ data.total_waived|floatformat:2 }}</div></div>
 </div>
 
 <table>
@@ -25,6 +27,7 @@
     <th class="num">{% trans "Disbursed (OUT)" %}</th>
     <th class="num">{% trans "Received (IN)" %}</th>
     <th class="num">{% trans "Interest Earned" %}</th>
+    <th class="num">{% trans "Interest Waived" %}</th>
   </tr></thead>
   <tbody>
     {% for r in data.rows %}
@@ -33,6 +36,7 @@
       <td class="num out">₹{{ r.out|floatformat:2 }}</td>
       <td class="num in">₹{{ r.in|floatformat:2 }}</td>
       <td class="num">₹{{ r.interest|floatformat:2 }}</td>
+      <td class="num">₹{{ r.waived|floatformat:2 }}</td>
     </tr>
     {% endfor %}
   </tbody>
@@ -41,6 +45,7 @@
     <td class="num out">₹{{ data.total_out|floatformat:2 }}</td>
     <td class="num in">₹{{ data.total_in|floatformat:2 }}</td>
     <td class="num">₹{{ data.total_interest|floatformat:2 }}</td>
+    <td class="num">₹{{ data.total_waived|floatformat:2 }}</td>
   </tr></tfoot>
 </table>
 {% endblock %}

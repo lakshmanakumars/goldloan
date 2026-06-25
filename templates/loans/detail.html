@@ -116,6 +116,7 @@
             <tr><td class="k">Monthly interest</td><td class="v">₹{{ monthly|floatformat:2 }}</td></tr>
             <tr><td class="k">Interest accrued to date</td><td class="v">₹{{ accrued|floatformat:2 }}</td></tr>
             <tr><td class="k">Interest paid so far</td><td class="v" style="color:#047857">₹{{ paid_i|floatformat:2 }}</td></tr>
+            {% if waived_i > 0 %}<tr><td class="k">Interest waived (goodwill)</td><td class="v" style="color:#6b7280">₹{{ waived_i|floatformat:2 }}</td></tr>{% endif %}
             <tr class="danger"><td class="k">Interest due now</td><td class="v">₹{{ due_now|floatformat:2 }}</td></tr>
             <tr class="divider"><td colspan="2"></td></tr>
             <tr class="success-row"><td class="k">Total settlement to close today</td><td class="v">₹{{ total_settlement|floatformat:2 }}</td></tr>

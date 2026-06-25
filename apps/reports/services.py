@@ -63,7 +63,9 @@ class KPI:
     lifetime_disbursed: Decimal
     lifetime_received_principal: Decimal
     lifetime_received_interest: Decimal
+    lifetime_waived_interest: Decimal
     interest_this_month: Decimal
+    waived_this_month: Decimal
     loanbook_networth: Decimal
 
 
@@ -95,9 +97,13 @@ def compute_kpis(tenant=None) -> KPI:
     lifetime_disbursed = loans.aggregate(s=Sum('principal'))['s'] or Decimal('0')
     paid_principal = repays.aggregate(s=Sum('principal_paid'))['s'] or Decimal('0')
     paid_interest = repays.aggregate(s=Sum('interest_paid'))['s'] or Decimal('0')
+    waived_interest = repays.aggregate(
+        s=Sum('interest_waived'))['s'] or Decimal('0')
     month_start_dt, _ = _local_dt_range(month_start, month_start)
     interest_month = repays.filter(paid_at__gte=month_start_dt).aggregate(
         s=Sum('interest_paid'))['s'] or Decimal('0')
+    waived_month = repays.filter(paid_at__gte=month_start_dt).aggregate(
+        s=Sum('interest_waived'))['s'] or Decimal('0')
 
     outstanding = lifetime_disbursed - paid_principal
 
@@ -120,7 +126,9 @@ def compute_kpis(tenant=None) -> KPI:
         lifetime_disbursed=lifetime_disbursed.quantize(Decimal('0.01')),
         lifetime_received_principal=paid_principal.quantize(Decimal('0.01')),
         lifetime_received_interest=paid_interest.quantize(Decimal('0.01')),
+        lifetime_waived_interest=waived_interest.quantize(Decimal('0.01')),
         interest_this_month=interest_month.quantize(Decimal('0.01')),
+        waived_this_month=waived_month.quantize(Decimal('0.01')),
         loanbook_networth=networth.quantize(Decimal('0.01')),
     )
 
@@ -258,7 +266,8 @@ def monthly_cash_summary(tenant, year=None):
     months = {}
     for i in range(1, 13):
         months[i] = {'month': date(year, i, 1), 'out': Decimal('0'),
-                     'in': Decimal('0'), 'interest': Decimal('0')}
+                     'in': Decimal('0'), 'interest': Decimal('0'),
+                     'waived': Decimal('0')}
 
     for loan in _qs_loans(tenant).filter(start_date__year=year):
         months[loan.start_date.month]['out'] += loan.principal.amount
@@ -268,6 +277,7 @@ def monthly_cash_summary(tenant, year=None):
         m = timezone.localtime(r.paid_at).month
         months[m]['in'] += r.principal_paid.amount + r.interest_paid.amount
         months[m]['interest'] += r.interest_paid.amount
+        months[m]['waived'] += r.interest_waived.amount
 
     rows = list(months.values())
     return {
@@ -276,6 +286,7 @@ def monthly_cash_summary(tenant, year=None):
         'total_out': sum(r['out'] for r in rows),
         'total_in': sum(r['in'] for r in rows),
         'total_interest': sum(r['interest'] for r in rows),
+        'total_waived': sum(r['waived'] for r in rows),
     }
 
 
@@ -328,22 +339,26 @@ def interest_earned(tenant, from_date, to_date):
 
     rows = []
     total = Decimal('0')
+    total_waived = Decimal('0')
     for r in repays:
-        if r.interest_paid.amount > 0:
+        if r.interest_paid.amount > 0 or r.interest_waived.amount > 0:
             rows.append({
                 'paid_at': r.paid_at,
                 'loan_no': r.loan.loan_no,
                 'customer': r.loan.customer.name,
                 'amount': r.interest_paid.amount,
+                'waived': r.interest_waived.amount,
                 'mode': r.get_mode_display(),
                 'receipt_no': r.receipt_no,
             })
             total += r.interest_paid.amount
+            total_waived += r.interest_waived.amount
     return {
         'from_date': from_date,
         'to_date': to_date,
         'rows': rows,
         'total': total,
+        'total_waived': total_waived,
     }
 
 

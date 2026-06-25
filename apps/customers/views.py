@@ -40,6 +40,8 @@ def customer_detail(request, pk):
     lifetime_borrowed = sum((l.principal.amount for l in loans), Decimal('0'))
     lifetime_interest_paid = sum(
         (l.total_paid_interest().amount for l in loans), Decimal('0'))
+    lifetime_interest_waived = sum(
+        (l.total_waived_interest().amount for l in loans), Decimal('0'))
 
     # Recent activity: combine loans + repayments timeline
     events = []
@@ -70,6 +72,7 @@ def customer_detail(request, pk):
         'total_interest_due': total_interest_due,
         'lifetime_borrowed': lifetime_borrowed,
         'lifetime_interest_paid': lifetime_interest_paid,
+        'lifetime_interest_waived': lifetime_interest_waived,
         'events': events[:20],
         'edit_url': reverse('admin:customers_customer_change', args=[customer.pk]),
         'add_loan_url': reverse('admin:loans_loan_add')

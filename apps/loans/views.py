@@ -120,6 +120,7 @@ def loan_detail(request, pk):
 
     paid_p = loan.total_paid_principal().amount
     paid_i = loan.total_paid_interest().amount
+    waived_i = loan.total_waived_interest().amount
     outstanding = loan.outstanding_principal().amount
     monthly = loan.monthly_interest().amount
     accrued = loan.interest_accrued().amount
@@ -159,7 +160,8 @@ def loan_detail(request, pk):
         **admin.site.each_context(request),
         'loan': loan, 'items': items, 'repayments': repayments,
         'ltv': ltv,
-        'paid_p': paid_p, 'paid_i': paid_i, 'outstanding': outstanding,
+        'paid_p': paid_p, 'paid_i': paid_i, 'waived_i': waived_i,
+        'outstanding': outstanding,
         'monthly': monthly, 'accrued': accrued, 'due_now': due_now,
         'days': days, 'months': months,
         'total_settlement': outstanding + due_now,

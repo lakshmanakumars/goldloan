@@ -94,10 +94,11 @@ def monthly_cash_summary(request):
 
     if request.GET.get('format') == 'xlsx':
         rows = [(r['month'].strftime('%b %Y'), r['out'], r['in'],
-                 r['interest']) for r in data['rows']]
+                 r['interest'], r['waived']) for r in data['rows']]
         return exports.excel_response(
             f'monthly-summary-{year}.xlsx',
-            ['Month', 'Disbursed (Out)', 'Received (In)', 'Interest Earned'],
+            ['Month', 'Disbursed (Out)', 'Received (In)', 'Interest Earned',
+             'Interest Waived'],
             rows, sheet_name=f'Monthly {year}',
         )
     return render(request, 'reports/monthly_cash_summary.html', {
@@ -139,11 +140,12 @@ def interest_earned(request):
 
     if request.GET.get('format') == 'xlsx':
         rows = [(r['paid_at'], r['loan_no'], r['customer'],
-                 r['amount'], r['mode'], r['receipt_no'])
+                 r['amount'], r['waived'], r['mode'], r['receipt_no'])
                 for r in data['rows']]
         return exports.excel_response(
             f'interest-earned-{from_date}-to-{to_date}.xlsx',
-            ['Paid at', 'Loan #', 'Customer', 'Amount', 'Mode', 'Receipt #'],
+            ['Paid at', 'Loan #', 'Customer', 'Amount', 'Waived', 'Mode',
+             'Receipt #'],
             rows, sheet_name='Interest Earned',
         )
     return render(request, 'reports/interest_earned.html', {

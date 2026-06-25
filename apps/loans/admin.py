@@ -75,8 +75,8 @@ class RepaymentInline(_TenantInlineMixin, TabularInline):
     model = Repayment
     tenant_resource = 'repayment'
     extra = 0
-    fields = ('paid_at', 'principal_paid', 'interest_paid', 'mode',
-              'reference', 'receipt_no')
+    fields = ('paid_at', 'principal_paid', 'interest_paid', 'interest_waived',
+              'mode', 'reference', 'receipt_no')
     readonly_fields = ('paid_at',)
 
 
@@ -538,8 +538,10 @@ class LoanAdmin(TenantModelAdmin):
 @admin.register(Repayment)
 class RepaymentAdmin(TenantModelAdmin):
     tenant_resource = 'repayment'
-    list_display = ('receipt_no_display', 'loan', 'paid_at', 'principal_paid',
-                    'interest_paid', 'mode', 'pdf_link')
+    list_display = ('receipt_no_display', 'loan_no_link', 'customer_link',
+                    'paid_at', 'principal_paid', 'interest_paid',
+                    'interest_waived', 'mode', 'pdf_link')
+    list_select_related = ('loan', 'loan__customer')
     list_filter = (
         ('mode', ChoicesDropdownFilter),
         ('loan__status', ChoicesDropdownFilter),
@@ -560,6 +562,23 @@ class RepaymentAdmin(TenantModelAdmin):
         return obj.receipt_no or obj.pk
     receipt_no_display.short_description = 'Receipt no'
     receipt_no_display.admin_order_field = 'receipt_no'
+
+    def loan_no_link(self, obj):
+        """Loan # linking to the loan detail page."""
+        url = reverse('loans:detail', args=[obj.loan_id])
+        return format_html('<a href="{}"><strong>{}</strong></a>',
+                           url, obj.loan.loan_no)
+    loan_no_link.short_description = 'Loan #'
+    loan_no_link.admin_order_field = 'loan__loan_no'
+
+    def customer_link(self, obj):
+        """Customer name/code linking to the customer detail page."""
+        url = reverse('customers:detail', args=[obj.loan.customer_id])
+        return format_html(
+            '<a href="{}">{}</a> <small>{}</small>',
+            url, obj.loan.customer.name, obj.loan.customer.code)
+    customer_link.short_description = 'Customer'
+    customer_link.admin_order_field = 'loan__customer__name'
 
     def pdf_link(self, obj):
         url = reverse('loans:repayment_receipt', args=[obj.pk])

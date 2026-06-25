@@ -159,6 +159,12 @@ class Loan(TenantAwareModel, TimeStampedModel):
             s=models.Sum('interest_paid'))['s'] or Decimal('0')
         return Money(total, self.principal.currency)
 
+    def total_waived_interest(self) -> Money:
+        """Interest forgiven as a goodwill gesture (never cash received)."""
+        total = self.repayments.aggregate(
+            s=models.Sum('interest_waived'))['s'] or Decimal('0')
+        return Money(total, self.principal.currency)
+
     def total_paid_principal(self) -> Money:
         total = self.repayments.aggregate(
             s=models.Sum('principal_paid'))['s'] or Decimal('0')
@@ -209,8 +215,15 @@ class Loan(TenantAwareModel, TimeStampedModel):
         return Money(amt, self.principal.currency)
 
     def interest_due_now(self, on_date=None) -> Money:
-        """Accrued so far minus what's already been paid as interest."""
-        due = self.interest_accrued(on_date) - self.total_paid_interest()
+        """Accrued so far minus interest already paid AND interest waived.
+
+        A waiver forgives accrued interest, so it reduces what's still owed
+        just like a cash interest payment does — a paid+waived combination
+        clears the interest in full.
+        """
+        due = (self.interest_accrued(on_date)
+               - self.total_paid_interest()
+               - self.total_waived_interest())
         if due.amount < 0:
             return Money(Decimal('0.00'), self.principal.currency)
         return due
@@ -298,6 +311,12 @@ class Repayment(TenantAwareModel, TimeStampedModel):
                                 default_currency='INR', default=Decimal('0'))
     interest_paid = MoneyField(max_digits=12, decimal_places=2,
                                default_currency='INR', default=Decimal('0'))
+    interest_waived = MoneyField(
+        max_digits=12, decimal_places=2, default_currency='INR',
+        default=Decimal('0'),
+        help_text='Interest forgiven as a goodwill gesture. NOT cash — it '
+                  'reduces what the customer owes but is excluded from the '
+                  'cash receipt total.')
     mode = models.CharField(max_length=10, choices=Mode.choices,
                             default=Mode.CASH)
     reference = models.CharField(max_length=100, blank=True,
@@ -310,6 +329,56 @@ class Repayment(TenantAwareModel, TimeStampedModel):
             models.UniqueConstraint(fields=['tenant', 'receipt_no'],
                                     name='uniq_receipt_no_per_tenant'),
         ]
+
+    def clean(self):
+        """Guard against settling more than is actually owed.
+
+        Balances are computed EXCLUDING this repayment (via its prior saved
+        values when editing) so the check is correct for both add and edit.
+        """
+        super().clean()
+        # Amounts can never be negative.
+        neg = {}
+        for fname in ('principal_paid', 'interest_paid', 'interest_waived'):
+            if Decimal(getattr(self, fname).amount or 0) < 0:
+                neg[fname] = _('Cannot be negative.')
+        if neg:
+            raise ValidationError(neg)
+        if self.loan_id is None:
+            return
+        loan = self.loan
+        tol = Decimal('0.01')
+        cur = loan.principal.currency
+
+        # Sum the OTHER repayments (everything on this loan except this row).
+        others = loan.repayments.exclude(pk=self.pk) if self.pk else \
+            loan.repayments.all()
+        agg = others.aggregate(
+            p=models.Sum('principal_paid'),
+            i=models.Sum('interest_paid'),
+            w=models.Sum('interest_waived'))
+        other_principal = agg['p'] or Decimal('0')
+        other_interest = (agg['i'] or Decimal('0')) + (agg['w'] or Decimal('0'))
+
+        principal_paid = Decimal(self.principal_paid.amount or 0)
+        interest_paid = Decimal(self.interest_paid.amount or 0)
+        interest_waived = Decimal(self.interest_waived.amount or 0)
+
+        remaining_principal = loan.principal.amount - other_principal
+        if principal_paid - remaining_principal > tol:
+            raise ValidationError({'principal_paid': _(
+                'Principal paid (%(p)s) exceeds the outstanding principal '
+                '(%(r)s) on this loan.') % {
+                    'p': Money(principal_paid, cur),
+                    'r': Money(max(remaining_principal, Decimal('0')), cur)}})
+
+        remaining_interest = loan.interest_accrued().amount - other_interest
+        if interest_paid + interest_waived - remaining_interest > tol:
+            raise ValidationError({'interest_waived': _(
+                'Interest paid + waived (%(s)s) exceeds the interest due '
+                '(%(r)s) on this loan.') % {
+                    's': Money(interest_paid + interest_waived, cur),
+                    'r': Money(max(remaining_interest, Decimal('0')), cur)}})
 
     def save(self, *args, **kwargs):
         if not self.paid_at:

@@ -72,6 +72,13 @@
       <div class="vh-kpi-value">₹{{ lifetime_interest_paid|floatformat:2 }}</div>
       <div class="vh-kpi-foot">your earned profit</div>
     </div>
+    {% if lifetime_interest_waived > 0 %}
+    <div class="vh-kpi">
+      <div class="vh-kpi-label">Interest waived lifetime</div>
+      <div class="vh-kpi-value">₹{{ lifetime_interest_waived|floatformat:2 }}</div>
+      <div class="vh-kpi-foot">goodwill given</div>
+    </div>
+    {% endif %}
   </div>
 
   <div class="vh-layout">

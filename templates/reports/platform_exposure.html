@@ -32,5 +32,9 @@
     <div class="label">This month interest</div>
     <div class="value">₹{{ k.interest_this_month|floatformat:2 }}</div>
   </div>
+  <div class="card">
+    <div class="label">Lifetime interest waived</div>
+    <div class="value">₹{{ k.lifetime_waived_interest|floatformat:2 }}</div>
+  </div>
 </div>
 {% endblock %}

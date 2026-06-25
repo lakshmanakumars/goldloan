@@ -90,6 +90,9 @@
   <tr><td>Mode</td><td>{{ rp.get_mode_display }}{% if rp.reference %} ({{ rp.reference }}){% endif %}</td></tr>
   <tr><td>Principal paid</td><td>₹ {{ rp.principal_paid.amount|floatformat:2 }}</td></tr>
   <tr><td>Interest paid</td><td>₹ {{ rp.interest_paid.amount|floatformat:2 }}</td></tr>
+  {% if rp.interest_waived.amount > 0 %}
+  <tr><td>Interest waived (goodwill)</td><td>₹ {{ rp.interest_waived.amount|floatformat:2 }}</td></tr>
+  {% endif %}
 </table>
 
 <div class="total">
