@@ -551,6 +551,10 @@ class RepaymentAdminForm(TenantUniqueAdminForm):
         for name in self._ZERO_FIELDS:
             if name in self.fields:
                 self.fields[name].required = False
+                # Drop the model's default=0 so the add form renders blank;
+                # only do so when there's no instance value to preserve.
+                if not self.instance.pk:
+                    self.fields[name].initial = None
 
     def clean(self):
         cleaned = super().clean()
@@ -581,14 +585,6 @@ class RepaymentAdmin(TenantModelAdmin):
         # Pre-fill principal_paid / interest_paid from the selected loan's
         # live balance (fetched via loans:balance_json).
         js = ('admin/loans/repayment_autofill.js',)
-
-    def get_changeform_initial_data(self, request):
-        # Start the money inputs blank instead of showing a pre-filled 0
-        # (the model default). Left empty, they still save as 0.
-        initial = super().get_changeform_initial_data(request)
-        for field in ('principal_paid', 'interest_paid', 'interest_waived'):
-            initial.setdefault(field, '')
-        return initial
 
     def receipt_no_display(self, obj):
         # Falls back to the row pk when no receipt number was generated/set,
