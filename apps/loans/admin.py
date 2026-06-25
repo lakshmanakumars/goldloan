@@ -5,9 +5,11 @@ from django.utils import timezone
 from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from unfold.admin import TabularInline
+from djmoney.money import Money
 from unfold.contrib.filters.admin import (
     ChoicesDropdownFilter, RelatedDropdownFilter)
 from apps.core.admin import TenantModelAdmin
+from apps.core.forms import TenantUniqueAdminForm
 from apps.core.filters import (
     FlatpickrRangeDateFilter, FlatpickrRangeDateTimeFilter)
 from apps.core.permissions import role_can, R, W
@@ -535,8 +537,32 @@ class LoanAdmin(TenantModelAdmin):
     ltv_summary.short_description = 'LTV breakdown'
 
 
+class RepaymentAdminForm(TenantUniqueAdminForm):
+    """Lets the money inputs start blank instead of pre-filled with 0.
+
+    The model fields carry ``default=Decimal('0')``, which Django would
+    otherwise echo into the add form. We mark them optional and coerce an
+    empty submission back to 0 so an untouched field still saves cleanly.
+    """
+    _ZERO_FIELDS = ('principal_paid', 'interest_paid', 'interest_waived')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name in self._ZERO_FIELDS:
+            if name in self.fields:
+                self.fields[name].required = False
+
+    def clean(self):
+        cleaned = super().clean()
+        for name in self._ZERO_FIELDS:
+            if name in self.fields and not cleaned.get(name):
+                cleaned[name] = Money(0, 'INR')
+        return cleaned
+
+
 @admin.register(Repayment)
 class RepaymentAdmin(TenantModelAdmin):
+    form = RepaymentAdminForm
     tenant_resource = 'repayment'
     list_display = ('receipt_no_display', 'loan_no_link', 'customer_link',
                     'paid_at', 'principal_paid', 'interest_paid',
@@ -555,6 +581,14 @@ class RepaymentAdmin(TenantModelAdmin):
         # Pre-fill principal_paid / interest_paid from the selected loan's
         # live balance (fetched via loans:balance_json).
         js = ('admin/loans/repayment_autofill.js',)
+
+    def get_changeform_initial_data(self, request):
+        # Start the money inputs blank instead of showing a pre-filled 0
+        # (the model default). Left empty, they still save as 0.
+        initial = super().get_changeform_initial_data(request)
+        for field in ('principal_paid', 'interest_paid', 'interest_waived'):
+            initial.setdefault(field, '')
+        return initial
 
     def receipt_no_display(self, obj):
         # Falls back to the row pk when no receipt number was generated/set,
