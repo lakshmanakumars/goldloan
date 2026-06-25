@@ -3,13 +3,17 @@ from decimal import Decimal
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
-from django.db import models
+from django.db import IntegrityError, models, transaction
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 
 from apps.core.models import TenantAwareModel, TimeStampedModel
+
+# How many times to regenerate an auto-number and retry the insert when it
+# collides with another concurrent insert on its per-tenant unique constraint.
+_MAX_NO_RETRIES = 5
 
 
 class Loan(TenantAwareModel, TimeStampedModel):
@@ -76,7 +80,8 @@ class Loan(TenantAwareModel, TimeStampedModel):
         return f'{self.loan_no} — {self.customer.name}'
 
     def save(self, *args, **kwargs):
-        if not self.loan_no:
+        autogen_no = not self.loan_no
+        if autogen_no:
             self.loan_no = self._next_no()
         if self.start_date and self.tenure_months and not self.maturity_date:
             self.maturity_date = self.start_date + relativedelta(
@@ -86,16 +91,43 @@ class Loan(TenantAwareModel, TimeStampedModel):
             from apps.core.tenancy import get_current_tenant
             tenant = self.tenant_id and self.tenant or get_current_tenant()
             self.branch = Branch.default_for(tenant)
-        super().save(*args, **kwargs)
+        if not autogen_no:
+            super().save(*args, **kwargs)
+            return
+        # An auto-generated loan_no is computed before insert, so concurrent
+        # inserts can pick the same number; the uniq_loan_no_per_tenant
+        # constraint then rejects one. Regenerate and retry on collision.
+        for attempt in range(_MAX_NO_RETRIES):
+            try:
+                with transaction.atomic():
+                    super().save(*args, **kwargs)
+                return
+            except IntegrityError:
+                if attempt == _MAX_NO_RETRIES - 1:
+                    raise
+                self.loan_no = self._next_no()
 
     def _next_no(self):
+        """Generate a year-scoped loan number: L-YYYY-NNNNN.
+
+        NNNNN is a per-tenant running counter that resets to 1 at the start
+        of each calendar year. The year is taken from the loan's start_date
+        (the booking date), so the number follows the calendar year and the
+        year prefix keeps numbers unique across years.
+        """
+        import datetime as _dt
         from apps.core.tenancy import get_current_tenant
         tenant = self.tenant_id and self.tenant or get_current_tenant()
+        year = (self.start_date or timezone.localdate()).year
+        prefix = f'L-{year}-'
         if tenant is None:
-            return 'L-TEMP'
-        last = Loan.all_objects.filter(tenant=tenant).order_by('-id').first()
-        next_n = (last.id + 1) if last else 1
-        return f'L-{next_n:05d}'
+            return f'{prefix}00001'
+        year_start = _dt.date(year, 1, 1)
+        year_end = _dt.date(year + 1, 1, 1)
+        count = Loan.all_objects.filter(
+            tenant=tenant, start_date__gte=year_start,
+            start_date__lt=year_end).count()
+        return f'{prefix}{count + 1:05d}'
 
     @property
     def annual_rate_pct(self) -> Decimal:
@@ -274,13 +306,32 @@ class Repayment(TenantAwareModel, TimeStampedModel):
 
     class Meta:
         ordering = ['-paid_at']
+        constraints = [
+            models.UniqueConstraint(fields=['tenant', 'receipt_no'],
+                                    name='uniq_receipt_no_per_tenant'),
+        ]
 
     def save(self, *args, **kwargs):
         if not self.paid_at:
             self.paid_at = timezone.now()
-        if not self.receipt_no:
+        autogen_no = not self.receipt_no
+        if autogen_no:
             self.receipt_no = self._next_receipt_no()
-        super().save(*args, **kwargs)
+        if not autogen_no:
+            super().save(*args, **kwargs)
+            return
+        # An auto-generated receipt_no is computed before insert, so concurrent
+        # inserts can pick the same number; the uniq_receipt_no_per_tenant
+        # constraint then rejects one. Regenerate and retry on collision.
+        for attempt in range(_MAX_NO_RETRIES):
+            try:
+                with transaction.atomic():
+                    super().save(*args, **kwargs)
+                return
+            except IntegrityError:
+                if attempt == _MAX_NO_RETRIES - 1:
+                    raise
+                self.receipt_no = self._next_receipt_no()
 
     def _next_receipt_no(self):
         """Generate a date-based receipt number: RCP-YYYYMMDD-NNN.
