@@ -8,6 +8,7 @@ from unfold.contrib.filters.admin import (
 
 from apps.core.admin import TenantModelAdmin
 from apps.core.filters import FlatpickrRangeDateFilter
+from apps.iam.models import User
 from .models import CashTransaction, DayClose
 
 
@@ -53,9 +54,15 @@ class CashTransactionAdmin(TenantModelAdmin):
         return super().get_readonly_fields(request, obj)
 
     def has_delete_permission(self, request, obj=None):
-        # Cannot delete auto-posted rows (they mirror loan/repayment state)
+        # Auto-posted rows mirror loan/repayment state, so normally they can't
+        # be deleted directly. Super admins and tenant owners are allowed
+        # through, so they can remove loans/repayments added by mistake — the
+        # auto cash rows then cascade away with the loan/repayment.
         if obj and obj.is_auto:
-            return False
+            user = request.user
+            is_owner = getattr(user, 'role', None) == User.Role.OWNER
+            if not (user.is_superuser or is_owner):
+                return False
         return super().has_delete_permission(request, obj)
 
     # ---- list display helpers ----
