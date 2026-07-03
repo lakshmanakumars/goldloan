@@ -103,6 +103,11 @@ def pledge_ticket_pdf(request, pk):
     response = HttpResponse(pdf_bytes, content_type='application/pdf')
     response['Content-Disposition'] = \
         f'inline; filename="pledge-{loan.loan_no}.pdf"'
+    # The ticket is regenerated from live data every time; never let the
+    # browser serve a stale cached copy (otherwise design/data changes appear
+    # not to take effect until a hard refresh).
+    response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response['Pragma'] = 'no-cache'
     return response
 
 
