@@ -147,7 +147,6 @@
     <th class="num">Wastage (g)</th>
     <th class="num">Net (g)</th>
     <th class="num">Purity (ct)</th>
-    <th class="num">Rate / g</th>
   </tr></thead>
   <tbody>
     {% for it in items %}
@@ -158,10 +157,9 @@
       <td class="num">{{ it.stone_weight_g }}</td>
       <td class="num"><b>{{ it.net_weight_g }}</b></td>
       <td class="num">{{ it.purity_carat }}</td>
-      <td class="num">{% if it.rate_per_gram %}₹ {{ it.rate_per_gram.amount|floatformat:2 }}{% else %}—{% endif %}</td>
     </tr>
     {% empty %}
-    <tr><td colspan="7" class="small" style="text-align:center;padding:14px">
+    <tr><td colspan="6" class="small" style="text-align:center;padding:14px">
       (no items recorded — add gold items to the loan before issuing the ticket)
     </td></tr>
     {% endfor %}
@@ -169,7 +167,7 @@
   <tfoot><tr>
     <td colspan="4" style="text-align:right">Total Net Weight</td>
     <td class="num">{{ total_net_wt }} g</td>
-    <td colspan="2"></td>
+    <td></td>
   </tr></tfoot>
 </table>
 
