@@ -115,19 +115,26 @@ class Loan(TenantAwareModel, TimeStampedModel):
         (the booking date), so the number follows the calendar year and the
         year prefix keeps numbers unique across years.
         """
-        import datetime as _dt
+        from django.db.models import IntegerField, Max
+        from django.db.models.functions import Cast, Substr
+
         from apps.core.tenancy import get_current_tenant
         tenant = self.tenant_id and self.tenant or get_current_tenant()
         year = (self.start_date or timezone.localdate()).year
         prefix = f'L-{year}-'
         if tenant is None:
             return f'{prefix}00001'
-        year_start = _dt.date(year, 1, 1)
-        year_end = _dt.date(year + 1, 1, 1)
-        count = Loan.all_objects.filter(
-            tenant=tenant, start_date__gte=year_start,
-            start_date__lt=year_end).count()
-        return f'{prefix}{count + 1:05d}'
+        # Derive the next number from the highest existing sequence for this
+        # tenant+year, not a row count. A plain count breaks whenever a number
+        # is missing (e.g. a loan was deleted): count+1 then lands on a number
+        # that still exists and the unique constraint rejects it. Max+1 skips
+        # over gaps and stays monotonic, so the retry loop can also advance.
+        last = Loan.all_objects.filter(
+            tenant=tenant, loan_no__startswith=prefix,
+        ).annotate(
+            seq=Cast(Substr('loan_no', len(prefix) + 1), IntegerField()),
+        ).aggregate(m=Max('seq'))['m'] or 0
+        return f'{prefix}{last + 1:05d}'
 
     @property
     def annual_rate_pct(self) -> Decimal:
