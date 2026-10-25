@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'django_celery_results',
     'widget_tweaks',
+    'axes',
 
     # Project apps
     'apps.core',
@@ -61,6 +62,8 @@ MIDDLEWARE = [
     # per-user / per-tenant default language too.
     'apps.core.middleware.TenantMiddleware',
     'auditlog.middleware.AuditlogMiddleware',
+    # Must be last: turns axes lockouts into a 429 response.
+    'axes.middleware.AxesMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -104,16 +107,29 @@ AUTH_USER_MODEL = 'iam.User'
 
 # Tenant-scoped login: see apps/iam/auth_backends.py
 AUTHENTICATION_BACKENDS = [
+    # Axes must be first so locked-out attempts never reach the real backend.
+    'axes.backends.AxesStandaloneBackend',
     'apps.iam.auth_backends.TenantScopedModelBackend',
 ]
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-     'OPTIONS': {'min_length': 8}},
+     'OPTIONS': {'min_length': 12}},
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+    {'NAME': 'apps.iam.validators.ComplexityValidator'},
 ]
+
+# Brute-force protection (django-axes): lock a username+IP pair for 1 hour
+# after 5 failed logins. Caddy sits in front, so the client IP comes from
+# X-Forwarded-For (one proxy hop).
+AXES_FAILURE_LIMIT = config('AXES_FAILURE_LIMIT', default=5, cast=int)
+AXES_COOLOFF_TIME = 1  # hours
+AXES_LOCKOUT_PARAMETERS = [['username', 'ip_address']]
+AXES_RESET_ON_SUCCESS = True
+AXES_IPWARE_PROXY_COUNT = 1
+AXES_IPWARE_META_PRECEDENCE_ORDER = ['HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR']
 
 LANGUAGE_CODE = 'en-in'
 TIME_ZONE = 'Asia/Kolkata'
