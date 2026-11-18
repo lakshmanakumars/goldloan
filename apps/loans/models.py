@@ -412,14 +412,8 @@ class Repayment(TenantAwareModel, TimeStampedModel):
     def _next_receipt_no(self):
         """Generate a date-based receipt number: RCP-YYYYMMDD-NNN.
 
-        NNN is a per-tenant daily counter based on the payment date.
-
-        Uses an explicit datetime range (local-day start/end converted to
-        the stored tz) rather than a ``paid_at__date`` lookup, since that
-        lookup relies on MySQL CONVERT_TZ / timezone tables which are not
-        guaranteed to be loaded.
+        NNN is a per-tenant daily counter keyed on the payment date.
         """
-        import datetime as _dt
         from apps.core.tenancy import get_current_tenant
         tenant = self.tenant_id and self.tenant or get_current_tenant()
         local_dt = timezone.localtime(self.paid_at)
@@ -427,14 +421,19 @@ class Repayment(TenantAwareModel, TimeStampedModel):
         prefix = f'RCP-{pay_date:%Y%m%d}-'
         if tenant is None:
             return f'{prefix}001'
-        tz = local_dt.tzinfo
-        day_start = timezone.make_aware(
-            _dt.datetime.combine(pay_date, _dt.time.min), tz)
-        day_end = day_start + _dt.timedelta(days=1)
-        count = Repayment.all_objects.filter(
-            tenant=tenant, paid_at__gte=day_start,
-            paid_at__lt=day_end).count()
-        return f'{prefix}{count + 1:03d}'
+        # Next number = highest NNN already issued under this prefix + 1.
+        # Counting repayments by paid_at is not safe: a receipt whose paid_at
+        # was later back-dated keeps its RCP-<today> number but drops out of
+        # today's count, so the count-based number collides on every retry.
+        nos = Repayment.all_objects.filter(
+            tenant=tenant, receipt_no__startswith=prefix,
+        ).values_list('receipt_no', flat=True)
+        highest = 0
+        for no in nos:
+            tail = no[len(prefix):]
+            if tail.isdigit():
+                highest = max(highest, int(tail))
+        return f'{prefix}{highest + 1:03d}'
 
     def __str__(self):
         return f'{self.loan.loan_no} ₹{self.principal_paid + self.interest_paid}'
