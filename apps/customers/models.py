@@ -1,11 +1,9 @@
 from django.core.validators import RegexValidator
-from django.db import IntegrityError, models, transaction
+from django.db import models
 from django.utils.translation import gettext_lazy as _
 from apps.core.models import TenantAwareModel, TimeStampedModel
+from apps.core.numbering import next_number, save_with_auto_number
 
-# How many times to regenerate an auto-number and retry the insert when it
-# collides with another concurrent insert on its per-tenant unique constraint.
-_MAX_NO_RETRIES = 5
 
 
 class Customer(TenantAwareModel, TimeStampedModel):
@@ -75,8 +73,6 @@ class Customer(TenantAwareModel, TimeStampedModel):
 
     def save(self, *args, **kwargs):
         autogen_code = not self.code
-        if autogen_code:
-            self.code = self._next_code()
         if self.pan:
             self.pan = self.pan.upper().strip()
         if self.aadhaar:
@@ -84,18 +80,12 @@ class Customer(TenantAwareModel, TimeStampedModel):
         if not autogen_code:
             super().save(*args, **kwargs)
             return
-        # An auto-generated code is computed before insert, so concurrent
-        # inserts can pick the same code; the uniq_customer_code_per_tenant
-        # constraint then rejects one. Regenerate and retry on collision.
-        for attempt in range(_MAX_NO_RETRIES):
-            try:
-                with transaction.atomic():
-                    super().save(*args, **kwargs)
-                return
-            except IntegrityError:
-                if attempt == _MAX_NO_RETRIES - 1:
-                    raise
-                self.code = self._next_code()
+        from apps.core.tenancy import get_current_tenant
+        tenant = self.tenant_id and self.tenant or get_current_tenant()
+        save_with_auto_number(
+            self, 'code', self._next_code,
+            lambda: super(Customer, self).save(*args, **kwargs),
+            taken_qs=Customer.all_objects.filter(tenant=tenant))
 
     @property
     def aadhaar_masked(self):
@@ -123,6 +113,7 @@ class Customer(TenantAwareModel, TimeStampedModel):
         tenant = self.tenant_id and self.tenant or get_current_tenant()
         if tenant is None:
             return 'C-TEMP'
-        last = Customer.all_objects.filter(tenant=tenant).order_by('-id').first()
-        next_n = (last.id + 1) if last else 1
-        return f'C-{next_n:05d}'
+        # Highest existing C-NNNNN + 1 (not last id + 1, which a manual or
+        # imported code can collide with on every retry).
+        return next_number(Customer.all_objects.filter(tenant=tenant),
+                           'code', 'C-', 5)

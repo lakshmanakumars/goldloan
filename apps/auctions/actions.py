@@ -96,6 +96,13 @@ def send_notice_1(request, auction: Auction):
         return _back_to(auction)
     if request.method == 'POST':
         with transaction.atomic():
+            # Lock the row and re-check: a double-click or two users sending
+            # at once must not insert notice #1 twice (unique per auction).
+            auction = Auction.objects.select_for_update().get(pk=auction.pk)
+            if not auction.can_send_notice_1:
+                messages.info(request, f'Notice 1 was already sent for '
+                              f'{auction.loan.loan_no}.')
+                return _back_to(auction)
             _send_notice(auction, 1, sent_by=request.user)
             auction.status = Auction.Status.NOTICE1_SENT
             auction.notice1_sent_at = timezone.now()
@@ -122,6 +129,13 @@ def send_notice_2(request, auction: Auction):
         return _back_to(auction)
     if request.method == 'POST':
         with transaction.atomic():
+            # Lock the row and re-check: a double-click or two users sending
+            # at once must not insert notice #2 twice (unique per auction).
+            auction = Auction.objects.select_for_update().get(pk=auction.pk)
+            if not auction.can_send_notice_2:
+                messages.info(request, f'Notice 2 was already sent for '
+                              f'{auction.loan.loan_no}.')
+                return _back_to(auction)
             _send_notice(auction, 2, sent_by=request.user)
             auction.status = Auction.Status.NOTICE2_SENT
             auction.notice2_sent_at = timezone.now()

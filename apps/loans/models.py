@@ -3,17 +3,15 @@ from decimal import Decimal
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
-from django.db import IntegrityError, models, transaction
+from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 
 from apps.core.models import TenantAwareModel, TimeStampedModel
+from apps.core.numbering import next_number, save_with_auto_number
 
-# How many times to regenerate an auto-number and retry the insert when it
-# collides with another concurrent insert on its per-tenant unique constraint.
-_MAX_NO_RETRIES = 5
 
 
 class Loan(TenantAwareModel, TimeStampedModel):
@@ -81,8 +79,6 @@ class Loan(TenantAwareModel, TimeStampedModel):
 
     def save(self, *args, **kwargs):
         autogen_no = not self.loan_no
-        if autogen_no:
-            self.loan_no = self._next_no()
         if self.start_date and self.tenure_months and not self.maturity_date:
             self.maturity_date = self.start_date + relativedelta(
                 months=int(self.tenure_months))
@@ -94,18 +90,10 @@ class Loan(TenantAwareModel, TimeStampedModel):
         if not autogen_no:
             super().save(*args, **kwargs)
             return
-        # An auto-generated loan_no is computed before insert, so concurrent
-        # inserts can pick the same number; the uniq_loan_no_per_tenant
-        # constraint then rejects one. Regenerate and retry on collision.
-        for attempt in range(_MAX_NO_RETRIES):
-            try:
-                with transaction.atomic():
-                    super().save(*args, **kwargs)
-                return
-            except IntegrityError:
-                if attempt == _MAX_NO_RETRIES - 1:
-                    raise
-                self.loan_no = self._next_no()
+        save_with_auto_number(
+            self, 'loan_no', self._next_no,
+            lambda: super(Loan, self).save(*args, **kwargs),
+            taken_qs=Loan.all_objects.filter(tenant=self._number_tenant()))
 
     def _next_no(self):
         """Generate a year-scoped loan number: L-YYYY-NNNNN.
@@ -115,26 +103,17 @@ class Loan(TenantAwareModel, TimeStampedModel):
         (the booking date), so the number follows the calendar year and the
         year prefix keeps numbers unique across years.
         """
-        from django.db.models import IntegerField, Max
-        from django.db.models.functions import Cast, Substr
-
-        from apps.core.tenancy import get_current_tenant
-        tenant = self.tenant_id and self.tenant or get_current_tenant()
         year = (self.start_date or timezone.localdate()).year
         prefix = f'L-{year}-'
+        tenant = self._number_tenant()
         if tenant is None:
             return f'{prefix}00001'
-        # Derive the next number from the highest existing sequence for this
-        # tenant+year, not a row count. A plain count breaks whenever a number
-        # is missing (e.g. a loan was deleted): count+1 then lands on a number
-        # that still exists and the unique constraint rejects it. Max+1 skips
-        # over gaps and stays monotonic, so the retry loop can also advance.
-        last = Loan.all_objects.filter(
-            tenant=tenant, loan_no__startswith=prefix,
-        ).annotate(
-            seq=Cast(Substr('loan_no', len(prefix) + 1), IntegerField()),
-        ).aggregate(m=Max('seq'))['m'] or 0
-        return f'{prefix}{last + 1:05d}'
+        return next_number(Loan.all_objects.filter(tenant=tenant),
+                           'loan_no', prefix, 5)
+
+    def _number_tenant(self):
+        from apps.core.tenancy import get_current_tenant
+        return self.tenant_id and self.tenant or get_current_tenant()
 
     @property
     def annual_rate_pct(self) -> Decimal:
@@ -390,50 +369,30 @@ class Repayment(TenantAwareModel, TimeStampedModel):
     def save(self, *args, **kwargs):
         if not self.paid_at:
             self.paid_at = timezone.now()
-        autogen_no = not self.receipt_no
-        if autogen_no:
-            self.receipt_no = self._next_receipt_no()
-        if not autogen_no:
+        if self.receipt_no:
             super().save(*args, **kwargs)
             return
-        # An auto-generated receipt_no is computed before insert, so concurrent
-        # inserts can pick the same number; the uniq_receipt_no_per_tenant
-        # constraint then rejects one. Regenerate and retry on collision.
-        for attempt in range(_MAX_NO_RETRIES):
-            try:
-                with transaction.atomic():
-                    super().save(*args, **kwargs)
-                return
-            except IntegrityError:
-                if attempt == _MAX_NO_RETRIES - 1:
-                    raise
-                self.receipt_no = self._next_receipt_no()
+        save_with_auto_number(
+            self, 'receipt_no', self._next_receipt_no,
+            lambda: super(Repayment, self).save(*args, **kwargs),
+            taken_qs=Repayment.all_objects.filter(tenant=self._number_tenant()))
 
     def _next_receipt_no(self):
         """Generate a date-based receipt number: RCP-YYYYMMDD-NNN.
 
         NNN is a per-tenant daily counter keyed on the payment date.
         """
-        from apps.core.tenancy import get_current_tenant
-        tenant = self.tenant_id and self.tenant or get_current_tenant()
-        local_dt = timezone.localtime(self.paid_at)
-        pay_date = local_dt.date()
+        pay_date = timezone.localtime(self.paid_at).date()
         prefix = f'RCP-{pay_date:%Y%m%d}-'
+        tenant = self._number_tenant()
         if tenant is None:
             return f'{prefix}001'
-        # Next number = highest NNN already issued under this prefix + 1.
-        # Counting repayments by paid_at is not safe: a receipt whose paid_at
-        # was later back-dated keeps its RCP-<today> number but drops out of
-        # today's count, so the count-based number collides on every retry.
-        nos = Repayment.all_objects.filter(
-            tenant=tenant, receipt_no__startswith=prefix,
-        ).values_list('receipt_no', flat=True)
-        highest = 0
-        for no in nos:
-            tail = no[len(prefix):]
-            if tail.isdigit():
-                highest = max(highest, int(tail))
-        return f'{prefix}{highest + 1:03d}'
+        return next_number(Repayment.all_objects.filter(tenant=tenant),
+                           'receipt_no', prefix, 3)
+
+    def _number_tenant(self):
+        from apps.core.tenancy import get_current_tenant
+        return self.tenant_id and self.tenant or get_current_tenant()
 
     def __str__(self):
         return f'{self.loan.loan_no} ₹{self.principal_paid + self.interest_paid}'

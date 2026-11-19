@@ -6,7 +6,8 @@ from django.utils.safestring import mark_safe
 from unfold.admin import ModelAdmin
 from unfold.contrib.filters.admin import (
     ChoicesDropdownFilter, RelatedDropdownFilter)
-from apps.core.admin import CrmListAdminMixin, TenantModelAdmin
+from apps.core.admin import (CrmListAdminMixin, IntegrityErrorGuardMixin,
+                             TenantModelAdmin)
 from apps.core.filters import FlatpickrRangeDateTimeFilter
 from .models import Tenant, User, Branch
 
@@ -47,7 +48,7 @@ class TenantUserChangeForm(UserChangeForm):
 
 
 @admin.register(Tenant)
-class TenantAdmin(CrmListAdminMixin, ModelAdmin):
+class TenantAdmin(IntegrityErrorGuardMixin, CrmListAdminMixin, ModelAdmin):
     list_display = ('name', 'slug', 'status', 'plan',
                     'contact_phone', 'subdomain_link', 'created_at')
     list_filter = (
@@ -126,7 +127,8 @@ class TenantAdmin(CrmListAdminMixin, ModelAdmin):
 
 
 @admin.register(User)
-class UserAdmin(CrmListAdminMixin, DjangoUserAdmin, ModelAdmin):
+class UserAdmin(IntegrityErrorGuardMixin, CrmListAdminMixin, DjangoUserAdmin,
+                ModelAdmin):
     add_form = TenantUserCreationForm
     form = TenantUserChangeForm
     model = User

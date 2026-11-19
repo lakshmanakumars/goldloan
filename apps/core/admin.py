@@ -8,11 +8,18 @@ ModelAdmin sets `tenant_resource` to one of the matrix keys (e.g. 'loan',
 Tenant data isolation itself happens at the queryset level via
 `TenantAwareManager` — this mixin only controls UI visibility.
 """
+import logging
+
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.admin.views.main import ChangeList
+from django.db import IntegrityError
+from django.http import HttpResponseRedirect
 from unfold.admin import ModelAdmin
 from apps.core.forms import TenantUniqueAdminForm
 from apps.core.permissions import role_can, R, W
+
+logger = logging.getLogger(__name__)
 
 
 class _ConfigurableChangeList(ChangeList):
@@ -46,6 +53,32 @@ class CrmListAdminMixin:
 
     def get_changelist(self, request, **kwargs):
         return _ConfigurableChangeList
+
+
+
+class IntegrityErrorGuardMixin:
+    """Turn a stray unique-constraint IntegrityError on an admin add/change
+    form into an error message instead of a 500. Mix into every ModelAdmin.
+    """
+    def changeform_view(self, request, object_id=None, form_url='',
+                        extra_context=None):
+        # Last-resort guard: form validation and the auto-number retry should
+        # stop every duplicate, but if a unique constraint still fires (e.g.
+        # two users saving the same record at once) show an error and keep
+        # the user on the form instead of a bare "Server Error (500)". The
+        # admin wraps the save in a transaction, so nothing partial is kept.
+        try:
+            return super().changeform_view(request, object_id, form_url,
+                                           extra_context)
+        except IntegrityError:
+            logger.exception('IntegrityError saving %s (object_id=%s)',
+                             self.model._meta.label, object_id)
+            messages.error(request, (
+                'This %s could not be saved because it duplicates an '
+                'existing record (it may have just been saved by someone '
+                'else). Nothing was saved; please check and try again.'
+            ) % self.model._meta.verbose_name)
+            return HttpResponseRedirect(request.get_full_path())
 
 
 class TenantAdminMixin:
@@ -85,7 +118,8 @@ class TenantAdminMixin:
         return user.tenant_id == tenant.id
 
 
-class TenantModelAdmin(CrmListAdminMixin, TenantAdminMixin, ModelAdmin):
+class TenantModelAdmin(IntegrityErrorGuardMixin, CrmListAdminMixin,
+                       TenantAdminMixin, ModelAdmin):
     """Convenience base class: Unfold ModelAdmin + tenant permission gates.
 
     Subclasses MUST set `tenant_resource` to one of the matrix keys.
@@ -98,3 +132,4 @@ class TenantModelAdmin(CrmListAdminMixin, TenantAdminMixin, ModelAdmin):
     and the filter Apply button from CrmListAdminMixin.
     """
     form = TenantUniqueAdminForm
+
