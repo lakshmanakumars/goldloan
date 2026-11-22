@@ -372,6 +372,8 @@ UNFOLD = {
                      'link': reverse_lazy('reports:monthly_cash_summary')},
                     {'title': _u('Outstanding Portfolio'), 'icon': 'account_balance',
                      'link': reverse_lazy('reports:outstanding_portfolio')},
+                    {'title': _u('Gold Rate Risk'), 'icon': 'trending_down',
+                     'link': reverse_lazy('reports:gold_rate_risk')},
                     {'title': _u('Interest Earned'), 'icon': 'trending_up',
                      'link': reverse_lazy('reports:interest_earned')},
                     {'title': _u('Loan-book Networth'), 'icon': 'savings',

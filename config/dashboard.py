@@ -43,6 +43,7 @@ def dashboard_callback(request, context):
             (_('Monthly Summary'),  reverse('reports:monthly_cash_summary')),
             (_('Outstanding Portfolio'),
              reverse('reports:outstanding_portfolio')),
+            (_('Gold Rate Risk'), reverse('reports:gold_rate_risk')),
             (_('Interest Earned'),  reverse('reports:interest_earned')),
             (_('Networth'), reverse('reports:networth')),
             (_('Cash Book'), reverse('cashbook:detail')),

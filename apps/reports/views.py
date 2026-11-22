@@ -131,6 +131,46 @@ def outstanding_portfolio(request):
 
 
 @tenant_report
+def gold_rate_risk(request):
+    from decimal import Decimal, InvalidOperation
+    from apps.rates.models import GoldRate
+
+    latest = GoldRate.latest_for(request.tenant, Decimal('22.00'))
+    current_rate = latest.rate_per_gram.amount if latest else None
+    max_ltv = Decimal(request.tenant.max_ltv_pct)
+    try:
+        rate = Decimal(request.GET.get('rate') or current_rate or 0)
+    except InvalidOperation:
+        rate = current_rate or Decimal('0')
+    basis = request.GET.get('basis') or 'value'
+    basis_pct = max_ltv if basis == 'ltv' else Decimal('100')
+    show_all = request.GET.get('all') == '1'
+
+    data = (services.gold_rate_risk(request.tenant, rate, basis_pct,
+                                    only_at_risk=not show_all)
+            if rate > 0 else None)
+
+    if data and request.GET.get('format') == 'xlsx':
+        rows = [(r['loan_no'], r['customer'], r['customer_phone'],
+                 r['grams_22'], r['outstanding'], r['given_per_g'],
+                 r['value'], r['ltv_pct'], r['shortfall'], r['start_date'],
+                 r['status']) for r in data['rows']]
+        return exports.excel_response(
+            f'gold-rate-risk-{rate}.xlsx',
+            ['Loan #', 'Customer', 'Phone', '22ct Grams', 'Outstanding',
+             'Given / g', f'Value @ {rate}', 'LTV %', 'Shortfall', 'Start',
+             'Status'],
+            rows, sheet_name='Gold Rate Risk',
+        )
+    return render(request, 'reports/gold_rate_risk.html', {
+        **_admin_ctx(request),
+        'title': _('Gold Rate Risk'), 'data': data, 'rate': rate,
+        'current_rate': current_rate, 'basis': basis, 'basis_pct': basis_pct,
+        'max_ltv': max_ltv, 'show_all': show_all,
+    })
+
+
+@tenant_report
 def interest_earned(request):
     today = timezone.now().date()
     from_date = _parse_date(request.GET.get('from'),

@@ -328,6 +328,63 @@ def outstanding_portfolio(tenant):
     }
 
 
+# ---------- Gold Rate Risk ----------
+
+def gold_rate_risk(tenant, rate_22ct, basis_pct, only_at_risk=True):
+    """Active/overdue loans re-valued at a given 22ct rate per gram.
+
+    Items of other purities are converted to 22ct-equivalent grams
+    (net_wt * purity / 22). A loan is "at risk" when its outstanding
+    principal exceeds basis_pct % of the gold value at rate_22ct.
+    given_per_g is the 22ct rate at which the loan breaks even.
+    """
+    loans = (_qs_loans(tenant)
+             .filter(status__in=[Loan.Status.ACTIVE, Loan.Status.OVERDUE])
+             .select_related('customer')
+             .annotate(paid_p=Sum('repayments__principal_paid'))
+             .prefetch_related('items')
+             .order_by('-start_date'))
+
+    rows = []
+    for loan in loans:
+        grams = sum((Decimal(it.net_weight_g or 0) * Decimal(it.purity_carat)
+                     / Decimal('22')) for it in loan.items.all())
+        grams = Decimal(grams).quantize(Decimal('0.001'))
+        outstanding = loan.principal.amount - (loan.paid_p or Decimal('0'))
+        value = (grams * rate_22ct).quantize(Decimal('0.01'))
+        limit = (value * basis_pct / Decimal('100')).quantize(Decimal('0.01'))
+        at_risk = outstanding > limit
+        if only_at_risk and not at_risk:
+            continue
+        rows.append({
+            'loan_no': loan.loan_no,
+            'customer': loan.customer.name,
+            'customer_phone': loan.customer.phone,
+            'grams_22': grams,
+            'outstanding': outstanding,
+            'given_per_g': ((outstanding / grams).quantize(Decimal('0.01'))
+                            if grams else None),
+            'value': value,
+            'ltv_pct': ((outstanding * 100 / value).quantize(Decimal('0.1'))
+                        if value else None),
+            'shortfall': max(outstanding - limit, Decimal('0.00')),
+            'at_risk': at_risk,
+            'start_date': loan.start_date,
+            'status': loan.get_status_display(),
+        })
+    rows.sort(key=lambda r: r['shortfall'], reverse=True)
+    risky = [r for r in rows if r['at_risk']]
+    return {
+        'rows': rows,
+        'risk_loans': len(risky),
+        'risk_customers': len({r['customer_phone'] or r['customer']
+                               for r in risky}),
+        'risk_outstanding': sum((r['outstanding'] for r in risky),
+                                Decimal('0')),
+        'risk_shortfall': sum((r['shortfall'] for r in risky), Decimal('0')),
+    }
+
+
 # ---------- Interest Earned ----------
 
 def interest_earned(tenant, from_date, to_date):

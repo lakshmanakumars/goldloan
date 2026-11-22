@@ -1,0 +1,67 @@
+{% extends "reports/base.html" %}
+{% load i18n %}
+{% block report %}
+<h1>{% trans "Gold Rate Risk" %}</h1>
+<div class="sub">{% trans "Active and overdue loans re-valued at a 22ct rate per gram. Other purities are converted to 22ct-equivalent grams." %}
+  {% if current_rate %}{% trans "Today's 22ct rate" %}: <b>₹{{ current_rate|floatformat:2 }}/g</b>{% endif %}</div>
+
+<form class="toolbar" method="get">
+  <label>{% trans "22ct rate ₹/g" %}
+    <input type="number" name="rate" step="0.01" min="0" value="{{ rate }}" required></label>
+  <label>{% trans "Flag when outstanding exceeds" %}
+    <select name="basis">
+      <option value="value" {% if basis == 'value' %}selected{% endif %}>{% trans "100% of gold value" %}</option>
+      <option value="ltv" {% if basis == 'ltv' %}selected{% endif %}>{% blocktrans %}Max LTV ({{ max_ltv }}%){% endblocktrans %}</option>
+    </select></label>
+  <label><input type="checkbox" name="all" value="1" {% if show_all %}checked{% endif %}> {% trans "Show all loans" %}</label>
+  <button class="btn btn-primary" type="submit">{% trans "Apply" %}</button>
+  {% if data %}<a class="btn btn-outline" href="?rate={{ rate }}&basis={{ basis }}{% if show_all %}&all=1{% endif %}&format=xlsx">{% trans "Download Excel" %}</a>{% endif %}
+</form>
+
+{% if data %}
+<div class="cards">
+  <div class="card"><div class="label">{% trans "Customers at risk" %}</div>
+    <div class="value">{{ data.risk_customers }}</div></div>
+  <div class="card"><div class="label">{% trans "Loans at risk" %}</div>
+    <div class="value">{{ data.risk_loans }}</div></div>
+  <div class="card"><div class="label">{% trans "Outstanding at risk" %}</div>
+    <div class="value">₹{{ data.risk_outstanding|floatformat:2 }}</div></div>
+  <div class="card"><div class="label">{% trans "Total shortfall" %}</div>
+    <div class="value">₹{{ data.risk_shortfall|floatformat:2 }}</div>
+    <div class="foot">{% blocktrans %}vs {{ basis_pct }}% of value at ₹{{ rate }}/g{% endblocktrans %}</div></div>
+</div>
+
+{% if data.rows %}
+<table>
+  <thead><tr>
+    <th>{% trans "Loan #" %}</th><th>{% trans "Customer" %}</th><th>{% trans "Phone" %}</th>
+    <th class="num">{% trans "22ct g" %}</th><th class="num">{% trans "Outstanding" %}</th>
+    <th class="num">{% trans "Given / g" %}</th><th class="num">{% trans "Value now" %}</th>
+    <th class="num">{% trans "LTV %" %}</th><th class="num">{% trans "Shortfall" %}</th>
+    <th>{% trans "Start" %}</th><th>{% trans "Status" %}</th>
+  </tr></thead>
+  <tbody>
+    {% for r in data.rows %}
+    <tr>
+      <td>{{ r.loan_no }}</td>
+      <td>{{ r.customer }}</td>
+      <td>{{ r.customer_phone }}</td>
+      <td class="num">{{ r.grams_22|floatformat:3 }}</td>
+      <td class="num">₹{{ r.outstanding|floatformat:2 }}</td>
+      <td class="num {% if r.at_risk %}out{% endif %}"><b>{% if r.given_per_g %}₹{{ r.given_per_g|floatformat:2 }}{% else %}—{% endif %}</b></td>
+      <td class="num">₹{{ r.value|floatformat:2 }}</td>
+      <td class="num">{% if r.ltv_pct %}{{ r.ltv_pct }}%{% else %}—{% endif %}</td>
+      <td class="num {% if r.at_risk %}out{% endif %}">₹{{ r.shortfall|floatformat:2 }}</td>
+      <td>{{ r.start_date|date:"d M Y" }}</td>
+      <td><span class="pill {% if r.status == 'Active' %}pill-active{% else %}pill-overdue{% endif %}">{{ r.status }}</span></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">{% trans "No loans exceed the limit at this rate." %}</div>
+{% endif %}
+{% else %}
+<div class="empty">{% trans "Enter a 22ct rate per gram to see which loans are at risk." %}</div>
+{% endif %}
+{% endblock %}
