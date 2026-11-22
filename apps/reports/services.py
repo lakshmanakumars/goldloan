@@ -357,6 +357,7 @@ def gold_rate_risk(tenant, rate_22ct, basis_pct, only_at_risk=True):
         if only_at_risk and not at_risk:
             continue
         rows.append({
+            'pk': loan.pk,
             'loan_no': loan.loan_no,
             'customer': loan.customer.name,
             'customer_phone': loan.customer.phone,

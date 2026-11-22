@@ -43,7 +43,7 @@
   <tbody>
     {% for r in data.rows %}
     <tr>
-      <td>{{ r.loan_no }}</td>
+      <td><a href="{% url 'loans:detail' r.pk %}" target="_blank">{{ r.loan_no }}</a></td>
       <td>{{ r.customer }}</td>
       <td>{{ r.customer_phone }}</td>
       <td class="num">{{ r.grams_22|floatformat:3 }}</td>
