@@ -143,7 +143,8 @@ def gold_rate_risk(request):
     except InvalidOperation:
         rate = current_rate or Decimal('0')
     basis = request.GET.get('basis') or 'value'
-    basis_pct = max_ltv if basis == 'ltv' else Decimal('100')
+    basis_pct = {'ltv': max_ltv, '70': Decimal('70')}.get(basis,
+                                                          Decimal('100'))
     show_all = request.GET.get('all') == '1'
 
     data = (services.gold_rate_risk(request.tenant, rate, basis_pct,

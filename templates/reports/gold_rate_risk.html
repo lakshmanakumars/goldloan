@@ -11,6 +11,7 @@
   <label>{% trans "Flag when outstanding exceeds" %}
     <select name="basis">
       <option value="value" {% if basis == 'value' %}selected{% endif %}>{% trans "100% of gold value" %}</option>
+      <option value="70" {% if basis == '70' %}selected{% endif %}>{% trans "70% of gold value" %}</option>
       <option value="ltv" {% if basis == 'ltv' %}selected{% endif %}>{% blocktrans %}Max LTV ({{ max_ltv }}%){% endblocktrans %}</option>
     </select></label>
   <label><input type="checkbox" name="all" value="1" {% if show_all %}checked{% endif %}> {% trans "Show all loans" %}</label>
